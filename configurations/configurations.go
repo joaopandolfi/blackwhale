@@ -10,38 +10,39 @@ import (
 	"github.com/unrolled/secure"
 )
 
-type sessionConfiguration struct {
+type SessionConfiguration struct {
 	Name    string
 	Store   *sessions.CookieStore
 	Options *sessions.Options
 }
 
-type whiteListAuthRoutes struct {
+type WhiteListAuthRoutes struct {
 	Paths map[string]bool
 }
 
-type firewallSettings struct {
+type FirewallSettings struct {
 	LocalHost  string
 	RemoteHost string
 }
 
-type timeout struct {
+type Timeout struct {
 	Write time.Duration
 	Read  time.Duration
 }
 
-type opsec struct {
+type Opsec struct {
 	Options secure.Options
 }
 
 type Configurations struct {
+	Name        string
 	MysqlUrl    string
 	MongoUrl    string
 	MongoDb     string
 	Port        string
 	CRONThreads int
 	CORS        string
-	Timeout     timeout
+	Timeout     Timeout
 
 	SlackToken   string
 	SlackWebHook []string
@@ -49,10 +50,10 @@ type Configurations struct {
 
 	BCryptSecret string
 
-	Session  sessionConfiguration
-	Security opsec
+	Session  SessionConfiguration
+	Security Opsec
 
-	WhiteListAuthRoutes whiteListAuthRoutes
+	WhiteListAuthRoutes WhiteListAuthRoutes
 	Templates           map[string]*pongo2.Template
 
 	StaticPath      string
@@ -62,7 +63,7 @@ type Configurations struct {
 	UploadPath      string
 	MaxSizeMbUpload int64
 
-	FirewallSettings firewallSettings
+	FirewallSettings FirewallSettings
 }
 
 var Configuration Configurations
@@ -80,6 +81,7 @@ func Load() {
 
 	Configuration = Configurations{
 
+		Name: "Blackwale - GO",
 		MysqlUrl: fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
 			"root",         // User
 			"rootpassword", // password
@@ -94,7 +96,7 @@ func Load() {
 		Port:        ":8990",
 		CORS:        "*",
 
-		Timeout: timeout{
+		Timeout: Timeout{
 			Write: 60 * time.Second,
 			Read:  60 * time.Second,
 		},
@@ -111,7 +113,7 @@ func Load() {
 		BCryptSecret: "#1$eY)&E&0",
 
 		// Session
-		Session: sessionConfiguration{
+		Session: SessionConfiguration{
 			Name:  "A2%!#23g4$0$",
 			Store: sessions.NewCookieStore([]byte("_-)(AS(&HSDH@ˆ@@#$##$*{{{$$}}}(U$$#@D)&#Y!)P(@M)(Xyeg3b321k5*443@@##@$!")),
 			Options: &sessions.Options{
@@ -121,7 +123,7 @@ func Load() {
 			},
 		},
 
-		Security: opsec{
+		Security: Opsec{
 			Options: secure.Options{
 				BrowserXssFilter:   true,
 				ContentTypeNosniff: false, // Da pau nos js
@@ -138,7 +140,7 @@ func Load() {
 		SlackChannel: "",
 
 		// Firewall]
-		FirewallSettings: firewallSettings{
+		FirewallSettings: FirewallSettings{
 			LocalHost:  "localhost:8080",
 			RemoteHost: "localhosy:443",
 		},

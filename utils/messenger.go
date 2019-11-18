@@ -32,7 +32,7 @@ func newBaseMessage(level string, message string, data interface{}) DbgMessage {
 	return DbgMessage{
 		Level:    level,
 		Datetime: time.Now().UTC().Format(time.RFC3339),
-		Service:  "Blackwale - GO",
+		Service:  configurations.Configuration.Name,
 		Message:  message,
 		Context:  data,
 	}
