@@ -5,6 +5,21 @@ Go web Framework
 # Main Example
 
 ```
+package main
+
+import (
+	"net/http"
+
+	"github.com/gorilla/mux"
+	"github.com/joaopandolfi/blackwhale/configurations"
+	"github.com/joaopandolfi/miia_api/routes"
+	"github.com/unrolled/secure"
+
+	"github.com/joaopandolfi/blackwhale/handlers"
+	"github.com/joaopandolfi/blackwhale/remotes/mysql"
+	"github.com/joaopandolfi/blackwhale/utils"
+)
+
 func configInit() {
 	configurations.Load()
 	mysql.Init()
@@ -12,13 +27,17 @@ func configInit() {
 	routes.Precompile()
 }
 
-func resilient(){
+func resilient() {
 	utils.Info("[SERVER] - Shutdown")
 
 	if err := recover(); err != nil {
-		utils.CriticalError("[SERVER] - Returning from the dark",err)
+		utils.CriticalError("[SERVER] - Returning from the dark", err)
 		main()
 	}
+}
+
+func relou(w http.ResponseWriter, r *http.Request) {
+	handlers.Response(w, "HELLOOU")
 }
 
 func main() {
@@ -34,8 +53,8 @@ func main() {
 	secureMiddleware := secure.New(configurations.Configuration.Security.Options)
 	r.Use(secureMiddleware.Handler)
 
-	// Routes consist of a path and a handler function.
-	routes.Register(r)
+	// Add routes
+	r.HandleFunc("/", relou).Methods("GET")
 
 	// Bind to a port and pass our router in
 	utils.Info("MI server listenning on", configurations.Configuration.Port)
