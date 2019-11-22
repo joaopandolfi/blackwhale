@@ -3,8 +3,8 @@ package utils
 import (
 	"fmt"
 
+	"github.com/joaopandolfi/blackwhale/configurations"
 	"golang.org/x/crypto/bcrypt"
-	"octopus.com/mi/configurations"
 )
 
 func HashPassword(password string) (string, error) {
