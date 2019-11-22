@@ -4,15 +4,14 @@ Go web Framework
 
 # Main Example
 
-```
-package main
+```package main
 
 import (
 	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/joaopandolfi/blackwhale/configurations"
-	"github.com/joaopandolfi/miia_api/routes"
+
 	"github.com/unrolled/secure"
 
 	"github.com/joaopandolfi/blackwhale/handlers"
@@ -23,8 +22,6 @@ import (
 func configInit() {
 	configurations.Load()
 	mysql.Init()
-	// Precompile html pages
-	routes.Precompile()
 }
 
 func resilient() {
