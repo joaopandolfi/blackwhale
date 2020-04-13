@@ -43,7 +43,7 @@ func CreateIndex(collection string, keys ...string) error {
 
 func GetNextID(key string) (id int) {
 	session := GetSession()
-	col := session.GetCollection("savings_counter")
+	col := session.GetCollection("whale_counter")
 
 	var doc Index
 	change := mgo.Change{

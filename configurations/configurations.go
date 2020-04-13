@@ -31,7 +31,11 @@ type Timeout struct {
 }
 
 type Opsec struct {
-	Options secure.Options
+	Options    secure.Options
+	Debug      bool
+	TLSCert    string
+	TLSKey     string
+	BCryptCost int // 10,11,12,13,14
 }
 
 type Configurations struct {
@@ -50,7 +54,6 @@ type Configurations struct {
 	SlackChannel string
 
 	BCryptSecret string
-	BCryptCost   int // 10,11,12,13,14
 
 	Session  SessionConfiguration
 	Security Opsec
@@ -75,8 +78,8 @@ func LoadConfig(c Configurations) {
 
 	Configuration.Session.Store.Options = Configuration.Session.Options
 
-	if Configuration.BCryptCost == 0 {
-		Configuration.BCryptCost = 14
+	if Configuration.Security.BCryptCost == 0 {
+		Configuration.Security.BCryptCost = 14
 	}
 	if Configuration.MongoPool == 0 {
 		Configuration.MongoPool = 5
@@ -98,8 +101,8 @@ func Load() {
 			"3311",         // port
 			"blackwhale"),  // Database
 
-		MongoUrl:  "",
-		MongoDb:   "",
+		MongoUrl:  "mongodb://127.0.0.1:27017",
+		MongoDb:   "blackwhale",
 		MongoPool: 5,
 
 		CRONThreads: 20,
@@ -121,7 +124,6 @@ func Load() {
 		MaxSizeMbUpload: 10 << 55, // min << max
 
 		BCryptSecret: "#1$eY)&E&0",
-		BCryptCost:   14,
 
 		// Session
 		Session: SessionConfiguration{
@@ -141,6 +143,10 @@ func Load() {
 				SSLHost:            "locahost:443",
 				SSLRedirect:        false,
 			},
+			BCryptCost: 14,
+			Debug:      true,
+			TLSCert:    "",
+			TLSKey:     "",
 		},
 
 		Templates: make(map[string]*pongo2.Template),
