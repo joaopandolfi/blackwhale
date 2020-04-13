@@ -22,7 +22,7 @@ var session Session
 var pool []Session
 var looper int
 
-const MAX_POOL int = 20
+var maxPool int = configurations.Configuration.MongoPool
 
 // Create session with ssl and ignore the validation cert (more common)
 func NewSessionSsl() (s *mgo.Session, err error) {
@@ -97,7 +97,7 @@ func newSession() (s *mgo.Session, err error) {
 func GetPoolSession() (s *Session, err error) {
 	lenPool := len(pool)
 
-	if lenPool <= MAX_POOL {
+	if lenPool <= maxPool {
 		looper = lenPool
 		var s *mgo.Session
 
@@ -114,7 +114,7 @@ func GetPoolSession() (s *Session, err error) {
 
 		pool = append(pool, Session{session: s})
 	} else {
-		if looper >= MAX_POOL {
+		if looper >= maxPool {
 			looper = 0
 		} else {
 			looper++
@@ -125,6 +125,9 @@ func GetPoolSession() (s *Session, err error) {
 }
 
 func FlushPull() {
+	for _, p := range pool {
+		go p.Close()
+	}
 	pool = nil
 	looper = 0
 }

@@ -39,6 +39,7 @@ type Configurations struct {
 	MysqlUrl    string
 	MongoUrl    string
 	MongoDb     string
+	MongoPool   int
 	Port        string
 	CRONThreads int
 	CORS        string
@@ -49,6 +50,7 @@ type Configurations struct {
 	SlackChannel string
 
 	BCryptSecret string
+	BCryptCost   int // 10,11,12,13,14
 
 	Session  SessionConfiguration
 	Security Opsec
@@ -73,6 +75,13 @@ func LoadConfig(c Configurations) {
 
 	Configuration.Session.Store.Options = Configuration.Session.Options
 
+	if Configuration.BCryptCost == 0 {
+		Configuration.BCryptCost = 14
+	}
+	if Configuration.MongoPool == 0 {
+		Configuration.MongoPool = 5
+	}
+
 	// Run in max of cpus
 	runtime.GOMAXPROCS(runtime.NumCPU())
 }
@@ -89,8 +98,9 @@ func Load() {
 			"3311",         // port
 			"blackwhale"),  // Database
 
-		MongoUrl: "",
-		MongoDb:  "",
+		MongoUrl:  "",
+		MongoDb:   "",
+		MongoPool: 5,
 
 		CRONThreads: 20,
 		Port:        ":8990",
@@ -111,6 +121,7 @@ func Load() {
 		MaxSizeMbUpload: 10 << 55, // min << max
 
 		BCryptSecret: "#1$eY)&E&0",
+		BCryptCost:   14,
 
 		// Session
 		Session: SessionConfiguration{
