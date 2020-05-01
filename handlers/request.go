@@ -24,12 +24,12 @@ func header(w http.ResponseWriter) {
 // responseError - Private function to make response
 func responseError(w http.ResponseWriter, message string) {
 	w.WriteHeader(500)
-	w.Write([]byte("{'error': 'Internal server error', 'message':" + message + "'}"))
+	w.Write([]byte("{'error': 'Internal server error', 'message':'" + message + "'}"))
 }
 
 // restResponseError - Private function to response in mode RES error
 func restResponseError(w http.ResponseWriter, message string) {
-	w.Write([]byte("{'success':false, 'message':" + message + "'}"))
+	w.Write([]byte("{'success':false, 'message':'" + message + "'}"))
 }
 
 // RESTResponse - Make default REST API response
