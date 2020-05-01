@@ -36,7 +36,7 @@ func responseError(w http.ResponseWriter, message string) {
 func restResponseError(w http.ResponseWriter, message string) {
 	var response map[string]interface{}
 	response = make(map[string]interface{})
-	response["success"] = true
+	response["success"] = false
 	response["message"] = message
 	b, _ := json.Marshal(response)
 
