@@ -35,7 +35,7 @@ func setSecretOnPass(password string) string {
 func CheckJwtToken(tokenString string) (Token, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		//Make sure that the token method conform to "SigningMethodHMAC"
-		if _, ok := token.Method.(*jwt.SigningMethodHS256); !ok {
+		if _, ok := token.Method.(jwt.SigningMethodHS256); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(configurations.Configuration.Security.JWTSecret), nil
