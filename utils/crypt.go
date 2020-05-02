@@ -12,8 +12,10 @@ import (
 
 // Token -
 type Token struct {
-	ID         string
-	Authorized bool
+	ID          string `json:'id'`
+	Permission  string `json:'permission'`
+	Institution string `json:'institution'`
+	Authorized  bool   `json:'authorized'`
 }
 
 // HashPassword - Make password hash
@@ -53,16 +55,20 @@ func CheckJwtToken(tokenString string) (Token, error) {
 	}
 
 	return Token{
-		Authorized: true,
-		ID:         claims["id"].(string),
+		Authorized:  true,
+		ID:          claims["id"].(string),
+		Institution: claims["institution"].(string),
+		Permission:  claims["permission"].(string),
 	}, nil
 }
 
 // NewJwtToken - Crete token with expiration time
-func NewJwtToken(userID string, expMinutes int) (string, error) {
+func NewJwtToken(t Token, expMinutes int) (string, error) {
 	atClaims := jwt.MapClaims{}
 	atClaims["authorized"] = true
-	atClaims["id"] = userID
+	atClaims["id"] = t.ID
+	atClaims["institution"] = t.Institution
+	atClaims["permission"] = t.Permission
 	atClaims["exp"] = fmt.Sprintf("%v", time.Now().Add(time.Minute*time.Duration(expMinutes)).Unix())
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 	token, err := at.SignedString([]byte(configurations.Configuration.Security.JWTSecret))
