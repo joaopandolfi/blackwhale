@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -34,8 +35,8 @@ func setSecretOnPass(password string) string {
 // CheckJwtToken - Check sended token
 func CheckJwtToken(tokenString string) (Token, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		//Make sure that the token method conform to "SigningMethodHMAC"
-		if _, ok := token.Method.(jwt.SigningMethodHS256); !ok {
+		//Make sure that the token method conform to "HS256"
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(configurations.Configuration.Security.JWTSecret), nil
@@ -49,7 +50,9 @@ func CheckJwtToken(tokenString string) (Token, error) {
 		return Token{Authorized: false}, fmt.Errorf("invalid Token")
 	}
 
-	if claims["exp"].(int64) < time.Now().Unix() {
+	exps := claims["exp"].(string)
+	exp, _ := strconv.ParseInt(exps, 10, 64)
+	if exp < time.Now().Unix() {
 		return Token{Authorized: false}, fmt.Errorf("expired token")
 	}
 
@@ -64,7 +67,7 @@ func NewJwtToken(userID string, expMinutes int) (string, error) {
 	atClaims := jwt.MapClaims{}
 	atClaims["authorized"] = true
 	atClaims["id"] = userID
-	atClaims["exp"] = time.Now().Add(time.Minute * time.Duration(expMinutes)).Unix()
+	atClaims["exp"] = fmt.Sprintf("%v", time.Now().Add(time.Minute*time.Duration(expMinutes)).Unix())
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 	token, err := at.SignedString([]byte(configurations.Configuration.Security.JWTSecret))
 	if err != nil {
