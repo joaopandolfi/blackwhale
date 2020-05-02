@@ -9,7 +9,6 @@ import (
 
 	"github.com/flosch/pongo2"
 	"github.com/gorilla/sessions"
-	"github.com/joaopandolfi/blackwhale/utils"
 	"github.com/unrolled/secure"
 )
 
@@ -83,14 +82,12 @@ func LoadJsonFile(fpath string) map[string]string {
 	var confFile map[string]string
 	file, err := os.Open(fpath)
 	if err != nil {
-		utils.CriticalError("Config file is not present", err.Error())
 		panic("Config file is not present")
 	}
 
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&confFile)
 	if err != nil {
-		utils.CriticalError("Config file is not parseable", err.Error())
 		panic("Config file is not parseable")
 	}
 	return confFile
