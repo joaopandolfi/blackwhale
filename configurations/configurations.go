@@ -31,12 +31,13 @@ type Timeout struct {
 }
 
 type Opsec struct {
-	Options    secure.Options
-	Debug      bool
-	TLSCert    string
-	TLSKey     string
-	BCryptCost int // 10,11,12,13,14
-	JWTSecret  string
+	Options       secure.Options
+	Debug         bool
+	TLSCert       string
+	TLSKey        string
+	BCryptCost    int // 10,11,12,13,14
+	JWTSecret     string
+	TokenValidity int
 }
 
 type Configurations struct {
@@ -149,6 +150,7 @@ func Load() {
 			TLSCert:    "",
 			TLSKey:     "",
 			JWTSecret:  "",
+			TokenValidity 60,
 		},
 
 		Templates: make(map[string]*pongo2.Template),
