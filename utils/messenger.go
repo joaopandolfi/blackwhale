@@ -40,8 +40,7 @@ func newBaseMessage(level string, message string, data interface{}) DbgMessage {
 
 func dispatch(m DbgMessage) {
 	r, _ := json.Marshal(m)
-	message := string(r)
-	fmt.Println(message)
+	fmt.Println(string(r))
 }
 
 func levelToColor(level string) (color string) {

@@ -36,6 +36,7 @@ type Opsec struct {
 	TLSCert    string
 	TLSKey     string
 	BCryptCost int // 10,11,12,13,14
+	JWTSecret  string
 }
 
 type Configurations struct {
@@ -147,6 +148,7 @@ func Load() {
 			Debug:      true,
 			TLSCert:    "",
 			TLSKey:     "",
+			JWTSecret:  "",
 		},
 
 		Templates: make(map[string]*pongo2.Template),

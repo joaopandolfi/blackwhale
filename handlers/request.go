@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
@@ -23,34 +24,20 @@ func header(w http.ResponseWriter) {
 
 // responseError - Private function to make response
 func responseError(w http.ResponseWriter, message string) {
-	var response map[string]interface{}
-	response = make(map[string]interface{})
-	response["message"] = message
-	b, _ := json.Marshal(response)
-
-	w.WriteHeader(500)
+	b, _ := json.Marshal(map[string]string{"message": message})
+	w.WriteHeader(http.StatusInternalServerError)
 	w.Write(b)
 }
 
 // restResponseError - Private function to response in mode RES error
 func restResponseError(w http.ResponseWriter, message string) {
-	var response map[string]interface{}
-	response = make(map[string]interface{})
-	response["success"] = false
-	response["message"] = message
-	b, _ := json.Marshal(response)
-
+	b, _ := json.Marshal(map[string]interface{}{"success": false, "message": message})
 	w.Write(b)
 }
 
 // RESTResponse - Make default REST API response
 func RESTResponse(w http.ResponseWriter, resp interface{}) {
-	var response map[string]interface{}
-	response = make(map[string]interface{})
-	response["success"] = true
-	response["data"] = resp
-
-	Response(w, response)
+	Response(w, map[string]interface{}{"success": true, "data": resp})
 }
 
 // Response - Make default generic response
@@ -137,4 +124,15 @@ func GetSession(r *http.Request) (*sessions.Session, error) {
 // GetNamedSession - Return data sored on specific session
 func GetNamedSession(r *http.Request, name string) (*sessions.Session, error) {
 	return configurations.Configuration.Session.Store.Get(r, name)
+}
+
+// ExtractToken - Extract Jwt Token
+func ExtractToken(r *http.Request) string {
+	bearToken := r.Header.Get("Authorization")
+	//normally Authorization the_token_xxx
+	strArr := strings.Split(bearToken, " ")
+	if len(strArr) == 2 {
+		return strArr[1]
+	}
+	return ""
 }
