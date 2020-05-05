@@ -41,6 +41,7 @@ type Opsec struct {
 	BCryptCost    int // 10,11,12,13,14
 	JWTSecret     string
 	TokenValidity int
+	DefaultPwd    string
 }
 
 type Configurations struct {
@@ -118,6 +119,7 @@ func LoadFromFile(path string) Configurations {
 	tkVal, _ := strconv.Atoi(fconf["TOKEN_VALIDITY_MINUTES"])
 	mongoPool, _ := strconv.Atoi(fconf["MONGO_POOL"])
 	timeout, _ := strconv.Atoi(fconf["SERVER_TIMEOUT"])
+	bcryptCost, _ := strconv.Atoi(fconf["BCRYPT_COST"])
 
 	return Configurations{
 		Name: fconf["SERVER_NAME"],
@@ -164,9 +166,13 @@ func LoadFromFile(path string) Configurations {
 				SSLHost:            "locahost:443",
 				SSLRedirect:        false,
 			},
-			BCryptCost:    10,
+			BCryptCost:    bcryptCost,
+			Debug:         fconf["SERVER_DEBUG"] == "true",
+			TLSCert:       fconf["TLS_CERT"],
+			TLSKey:        fconf["TLS_KEY"],
 			JWTSecret:     fconf["JWT_SECRET"],
 			TokenValidity: tkVal,
+			DefaultPwd:    fconf["SERVER_DEFAULT_PASSWORD"],
 		},
 
 		Templates: make(map[string]*pongo2.Template),
