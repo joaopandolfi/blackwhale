@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"strconv"
 	"time"
 
 	"github.com/flosch/pongo2"
@@ -93,6 +94,7 @@ func LoadJsonFile(fpath string) map[string]string {
 	return confFile
 }
 
+// LoadConfig from previous configurations
 func LoadConfig(c Configurations) {
 	Configuration = c
 
@@ -109,6 +111,80 @@ func LoadConfig(c Configurations) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 }
 
+// LoadFromFile configurations
+func LoadFromFile(path string) Configurations {
+	fconf := LoadJsonFile(path)
+
+	tkVal, _ := strconv.Atoi(fconf["TOKEN_VALIDITY_MINUTES"])
+	mongoPool, _ := strconv.Atoi(fconf["MONGO_POOL"])
+	timeout, _ := strconv.Atoi(fconf["SERVER_TIMEOUT"])
+
+	return Configurations{
+		Name: fconf["SERVER_NAME"],
+
+		MysqlUrl: fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
+			fconf["MYSQL_USER"],
+			fconf["MYSQL_PASSWORD"],
+			fconf["MYSQL_HOST"],
+			fconf["MYSQL_PORT"],
+			fconf["MYSQL_DB"]),
+
+		MongoUrl:  fconf["MONGO_URL"],
+		MongoDb:   fconf["MONGO_DB"],
+		MongoPool: mongoPool,
+
+		Port: ":" + fconf["SERVER_PORT"],
+		CORS: fconf["SERVER_CORS"],
+
+		Timeout: Timeout{
+			Write: time.Duration(timeout) * time.Second,
+			Read:  time.Duration(timeout) * time.Second,
+		},
+
+		MaxSizeMbUpload: 10 << 55, // min << max
+
+		BCryptSecret: fconf["BCRYPT_SECRET"],
+		ResetHash:    fconf["RESET_HASH"],
+
+		// Session
+		Session: SessionConfiguration{
+			Name:  fconf["SESSION_NAME"],
+			Store: sessions.NewCookieStore([]byte(fconf["SESSION_STORE"])),
+			Options: &sessions.Options{
+				Path:     "/",
+				MaxAge:   3600 * 2, //86400 * 7,
+				HttpOnly: true,
+			},
+		},
+
+		Security: Opsec{
+			Options: secure.Options{
+				BrowserXssFilter:   true,
+				ContentTypeNosniff: false, // Da pau nos js
+				SSLHost:            "locahost:443",
+				SSLRedirect:        false,
+			},
+			BCryptCost:    10,
+			JWTSecret:     fconf["JWT_SECRET"],
+			TokenValidity: tkVal,
+		},
+
+		Templates: make(map[string]*pongo2.Template),
+
+		// Slack
+		SlackToken:   fconf["SLACK_TOKEN"],
+		SlackWebHook: []string{fconf["SLACK_WEBHOOK_1"], fconf["SLACK_WEBHOOK_2"]},
+		SlackChannel: fconf["SLACK_CHANNEL"],
+
+		// Firewall]
+		FirewallSettings: FirewallSettings{
+			LocalHost:  "localhost:8080",
+			RemoteHost: "localhosy:443",
+		},
+	}
+}
+
+// Load default configurations
 func Load() {
 
 	Configuration = Configurations{
