@@ -1,4 +1,4 @@
-package mysql
+package postgresql
 
 import (
 	"github.com/joaopandolfi/blackwhale/configurations"
