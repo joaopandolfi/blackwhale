@@ -47,6 +47,7 @@ type Opsec struct {
 type Configurations struct {
 	Name        string
 	MysqlUrl    string
+	PostgreSQL  string
 	MongoUrl    string
 	MongoDb     string
 	MongoPool   int
@@ -130,6 +131,10 @@ func LoadFromFile(path string) Configurations {
 			fconf["MYSQL_HOST"],
 			fconf["MYSQL_PORT"],
 			fconf["MYSQL_DB"]),
+
+		PostgreSQL: fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+			fconf["POSTGRESQL_HOST"], fconf["POSTGRESQL_PORT"], fconf["POSTGRESQL_USER"],
+			fconf["POSTGRESQL_PASSWORD"], fconf["POSTGRESQL_DB"]),
 
 		MongoUrl:  fconf["MONGO_URL"],
 		MongoDb:   fconf["MONGO_DB"],

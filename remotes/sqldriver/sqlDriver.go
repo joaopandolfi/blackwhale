@@ -9,6 +9,7 @@ import (
 
 	"github.com/elgs/gosqljson"
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 
 	//_ "gopkg.in/rana/ora.v4"
 	//_ "github.com/mattn/go-oci8"
