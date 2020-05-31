@@ -94,7 +94,7 @@ func slackDispatch(m DbgMessage) {
 
 	var attachment []map[string]string
 	attachment = append(attachment, map[string]string{
-		"title": fmt.Sprintf("%s %s", levelToEmogi(m.Level), m.Message),
+		"title": fmt.Sprintf("%s [%s] %s", levelToEmogi(m.Level), m.Service, m.Message),
 		"text":  fmt.Sprintf("*Timestamp:* %s \n*Context:* %s", m.Datetime, string(content)),
 		"color": levelToColor(m.Level),
 	})
