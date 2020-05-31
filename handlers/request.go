@@ -90,6 +90,11 @@ func GetHeader(r *http.Request, key string) string {
 	return r.Header.Get(key)
 }
 
+// InjectHeader - Inject data on header request
+func InjectHeader(r *http.Request, key, val string) {
+	r.Header.Add(key, val)
+}
+
 // GetQueryes - Return queryes values
 // @example /api?key=data
 func GetQueryes(r *http.Request) url.Values {
