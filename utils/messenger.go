@@ -78,6 +78,9 @@ func levelToEmogi(level string) (emogi string) {
 }
 
 func slackDispatch(m DbgMessage) {
+	if configurations.Configuration.SlackToken == "" {
+		return
+	}
 	var url string
 	defer func() {
 		if r := recover(); r != nil {
@@ -99,7 +102,7 @@ func slackDispatch(m DbgMessage) {
 	payload2 := SlackAttachment{
 		Channel:     configurations.Configuration.SlackChannel,
 		Token:       configurations.Configuration.SlackToken,
-		Username:    "blackwhale",
+		Username:    configurations.Configuration.Name,
 		Attachments: attachment,
 	}
 
@@ -111,10 +114,9 @@ func slackDispatch(m DbgMessage) {
 }
 
 func getSlackUrl() string {
-	if count > 3 {
+	count++
+	if count >= len(configurations.Configuration.SlackWebHook) {
 		count = 0
-	} else {
-		count++
 	}
 
 	return configurations.Configuration.SlackWebHook[count]
@@ -123,13 +125,13 @@ func getSlackUrl() string {
 func Info(message string, data ...interface{}) {
 	dbg := newBaseMessage("INFO", message, data)
 	dispatch(dbg)
-	//go slackDispatch(dbg)
+	go slackDispatch(dbg)
 }
 
 func Feedback(message string, data ...interface{}) {
 	dbg := newBaseMessage("DEBUG", message, data)
 	dispatch(dbg)
-	//go slackDispatch(dbg)
+	go slackDispatch(dbg)
 }
 
 func Debug(message string, data ...interface{}) {
@@ -145,7 +147,7 @@ func Error(message string, data ...interface{}) {
 func CriticalError(message string, data ...interface{}) {
 	dbg := newBaseMessage("ERROR", message, data)
 	dispatch(dbg)
-	//go slackDispatch(dbg)
+	go slackDispatch(dbg)
 }
 
 func Logger(data ...interface{}) error {
