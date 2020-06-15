@@ -103,10 +103,10 @@ func GetPoolSession() (*Session, error) {
 	pos := 0
 
 	if lenPool <= maxPool {
-		mu.Lock()
+		mpos.Lock()
 		looper = lenPool
 		pos = looper
-		mu.Unlock()
+		mpos.Unlock()
 
 		s, err := createSession()
 
@@ -118,14 +118,14 @@ func GetPoolSession() (*Session, error) {
 		return &pool[pos], nil
 	}
 
-	mu.Lock()
+	mpos.Lock()
 	if looper >= maxPool {
 		looper = 0
 	} else {
 		looper++
 	}
 	pos = looper
-	mu.Unlock()
+	mpos.Unlock()
 
 	if &pool[pos].session.Ping() != nil {
 		mrec.Lock()
