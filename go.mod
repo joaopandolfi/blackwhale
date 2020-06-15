@@ -14,5 +14,6 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/unrolled/secure v1.0.7
 	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79
+	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 )

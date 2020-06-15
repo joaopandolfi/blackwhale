@@ -12,6 +12,7 @@ import (
 
 	"github.com/joaopandolfi/blackwhale/configurations"
 	"github.com/joaopandolfi/blackwhale/utils"
+	"golang.org/x/xerrors"
 	"gopkg.in/mgo.v2"
 )
 
@@ -108,7 +109,7 @@ func GetPoolSession() (*Session, error) {
 		pos = looper
 		mpos.Unlock()
 
-		s, err := createSession()
+		s, err := createMgoSession()
 
 		if err != nil {
 			return nil, err
@@ -127,11 +128,12 @@ func GetPoolSession() (*Session, error) {
 	pos = looper
 	mpos.Unlock()
 
-	if &pool[pos].session.Ping() != nil {
+	if pool[pos].Health() != nil {
 		mrec.Lock()
-		&pool[pos].Close()
-		s, err := createSession()
-		&pool[pos] = Session{session: s}
+		pool[pos].Close()
+		s, errr := createMgoSession()
+		err = errr
+		pool[pos] = Session{session: s}
 		mrec.Unlock()
 	}
 
@@ -184,4 +186,11 @@ func (s *Session) Close() {
 	if s.session != nil {
 		s.session.Close()
 	}
+}
+
+func (s *Session) Health() error {
+	if s.session != nil {
+		return s.session.Ping()
+	}
+	return xerrors.Errorf("checking health: session is nill")
 }
