@@ -131,7 +131,7 @@ func GetPoolSession() (*Session, error) {
 		mrec.Lock()
 		&pool[pos].Close()
 		s, err := createSession()
-		&pool[pos] = s
+		&pool[pos] = Session{session: s}
 		mrec.Unlock()
 	}
 
