@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"strings"
+	"sync"
 
 	"github.com/joaopandolfi/blackwhale/configurations"
 	"github.com/joaopandolfi/blackwhale/utils"
@@ -21,6 +22,8 @@ type Session struct {
 var session Session
 var pool []Session
 var looper int
+var mpos sync.RWMutex
+var mrec sync.RWMutex
 
 var maxPool int = configurations.Configuration.MongoPool
 
@@ -94,34 +97,45 @@ func newSession() (s *mgo.Session, err error) {
 	return se, err
 }
 
-func GetPoolSession() (s *Session, err error) {
+func GetPoolSession() (*Session, error) {
+	var err error
 	lenPool := len(pool)
+	pos := 0
 
 	if lenPool <= maxPool {
+		mu.Lock()
 		looper = lenPool
-		var s *mgo.Session
+		pos = looper
+		mu.Unlock()
 
-		if strings.Contains(configurations.Configuration.MongoUrl, "ssl=") {
-			s, err = NewSessionSsl()
-		} else {
-			s, err = newSession()
-		}
+		s, err := createSession()
 
 		if err != nil {
-			FlushPull()
-			panic(err)
+			return nil, err
 		}
 
 		pool = append(pool, Session{session: s})
-	} else {
-		if looper >= maxPool {
-			looper = 0
-		} else {
-			looper++
-		}
+		return &pool[pos], nil
 	}
 
-	return &pool[looper], err
+	mu.Lock()
+	if looper >= maxPool {
+		looper = 0
+	} else {
+		looper++
+	}
+	pos = looper
+	mu.Unlock()
+
+	if &pool[pos].session.Ping() != nil {
+		mrec.Lock()
+		&pool[pos].Close()
+		s, err := createSession()
+		&pool[pos] = s
+		mrec.Unlock()
+	}
+
+	return &pool[pos], err
 }
 
 func FlushPull() {
@@ -130,6 +144,13 @@ func FlushPull() {
 	}
 	pool = nil
 	looper = 0
+}
+
+func createSession() (s *Session, err error) {
+	if strings.Contains(configurations.Configuration.MongoUrl, "ssl=") {
+		return NewSessionSsl()
+	}
+	return newSession()
 }
 
 // https://godoc.org/gopkg.in/mgo.v2#Dial
