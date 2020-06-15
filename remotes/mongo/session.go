@@ -146,7 +146,7 @@ func FlushPull() {
 	looper = 0
 }
 
-func createSession() (s *Session, err error) {
+func createMgoSession() (*mgo.Session, error) {
 	if strings.Contains(configurations.Configuration.MongoUrl, "ssl=") {
 		return NewSessionSsl()
 	}
