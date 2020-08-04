@@ -45,16 +45,17 @@ type Opsec struct {
 }
 
 type Configurations struct {
-	Name        string
-	MysqlUrl    string
-	PostgreSQL  string
-	MongoUrl    string
-	MongoDb     string
-	MongoPool   int
-	Port        string
-	CRONThreads int
-	CORS        string
-	Timeout     Timeout
+	Name          string
+	MysqlUrl      string
+	PostgreSQL    string
+	BeanstalkdUrl string
+	MongoUrl      string
+	MongoDb       string
+	MongoPool     int
+	Port          string
+	CRONThreads   int
+	CORS          string
+	Timeout       Timeout
 
 	SlackToken   string
 	SlackWebHook []string
@@ -140,6 +141,8 @@ func LoadFromFile(path string) Configurations {
 		MongoDb:   fconf["MONGO_DB"],
 		MongoPool: mongoPool,
 
+		BeanstalkdUrl: fconf["BEANSTALKD_URL"] + ":" + fconf["BEANSTALKD_PORT"],
+
 		Port: ":" + fconf["SERVER_PORT"],
 		CORS: fconf["SERVER_CORS"],
 
@@ -208,9 +211,10 @@ func Load() {
 			"3311",         // port
 			"blackwhale"),  // Database
 
-		MongoUrl:  "mongodb://127.0.0.1:27017",
-		MongoDb:   "blackwhale",
-		MongoPool: 5,
+		MongoUrl:      "mongodb://127.0.0.1:27017",
+		MongoDb:       "blackwhale",
+		MongoPool:     5,
+		BeanstalkdUrl: "127.0.0.1:11300",
 
 		CRONThreads: 20,
 		Port:        ":8990",

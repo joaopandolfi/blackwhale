@@ -10,6 +10,7 @@ require (
 	github.com/gorilla/mux v1.7.4
 	github.com/gorilla/schema v1.1.0
 	github.com/gorilla/sessions v1.2.0
+	github.com/kr/beanstalk v0.0.0-20180818045031-cae1762e4858
 	github.com/lib/pq v1.5.1
 	github.com/pkg/errors v0.9.1
 	github.com/unrolled/secure v1.0.7
