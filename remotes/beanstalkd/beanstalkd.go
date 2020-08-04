@@ -42,45 +42,22 @@ func New() (*Driver, error) {
 	}, nil
 }
 
-// OpenTube to put data
-func (d *Driver) OpenTube(tube string) {
-	if d.DataTubes[tube] == nil {
-		d.DataTubes[tube] = &beanstalk.Tube{Conn: d.Conn, Name: tube}
-	}
-}
-
-// ListenTube prepare tube to be listenned
-func (d *Driver) ListenTube(tube string) {
-	if d.HandleTubes[tube] == nil {
-		d.HandleTubes[tube] = TubeSet(d.Conn, tube)
-	}
-}
-
 // ReadTube data
 func (d *Driver) ReadTube(tube string, timeout time.Duration) (uint64, []byte, error) {
-	t, err := d.getHandleTube((tube))
-	if err != nil {
-		return 0, nil, xerrors.Errorf("reading tube: %w", err)
-	}
+	t := d.getHandleTube(tube)
 	return t.Reserve(timeout)
 }
 
 // PutDefault - Put message on tube with default configs
 func (d *Driver) PutDefault(tube string, body interface{}) (uint64, error) {
-	t, err := d.getDataTube(tube)
-	if err != nil {
-		return 0, xerrors.Errorf("puting message on tube: %w", err)
-	}
+	t := d.getDataTube(tube)
 	return Put(t, PRIORITY_NORMAL, 0, DURATION_DEFAULT, body)
 }
 
 // DeleteMessage on tube
 func (d *Driver) DeleteMessage(tube string, id uint64) error {
-	t, err := d.getDataTube(tube)
-	if err != nil {
-		return xerrors.Errorf("deleting message on tube: %w", err)
-	}
-	err = t.Conn.Delete(id)
+	t := d.getDataTube(tube)
+	err := t.Conn.Delete(id)
 	if err != nil {
 		return xerrors.Errorf("deleting message on tube (%v): %w", id, err)
 	}
@@ -89,11 +66,8 @@ func (d *Driver) DeleteMessage(tube string, id uint64) error {
 
 // BuryMessage on tube
 func (d *Driver) BuryMessage(tube string, id uint64, priority uint32) error {
-	t, err := d.getDataTube(tube)
-	if err != nil {
-		return xerrors.Errorf("burying message on tube [%v]: %w", tube, err)
-	}
-	err = t.Conn.Bury(id, priority)
+	t := d.getDataTube(tube)
+	err := t.Conn.Bury(id, priority)
 	if err != nil {
 		return xerrors.Errorf("burying message on tube [%v][%v]: %w", tube, id, err)
 	}
@@ -102,31 +76,27 @@ func (d *Driver) BuryMessage(tube string, id uint64, priority uint32) error {
 
 // RenewDuration on tube
 func (d *Driver) RenewDuration(tube string, id uint64) error {
-	t, err := d.getDataTube(tube)
-	if err != nil {
-		return xerrors.Errorf("renewing message duration on tube: %w", err)
-	}
-	err = t.Conn.Touch(id)
+	t := d.getDataTube(tube)
+	err := t.Conn.Touch(id)
 	if err != nil {
 		return xerrors.Errorf("renewing message duration on tube (%v): %w", id, err)
 	}
 	return nil
 }
 
-func (d *Driver) getHandleTube(tube string) (*beanstalk.TubeSet, error) {
-	t := d.HandleTubes[tube]
-	if t == nil {
-		return nil, xerrors.Errorf("unregistered handle tube")
+func (d *Driver) getHandleTube(tube string) *beanstalk.TubeSet {
+	if d.HandleTubes[tube] == nil {
+		d.HandleTubes[tube] = TubeSet(d.Conn, tube)
 	}
-	return t, nil
+	return d.HandleTubes[tube]
 }
 
-func (d *Driver) getDataTube(tube string) (*beanstalk.Tube, error) {
-	t := d.DataTubes[tube]
-	if t == nil {
-		return nil, xerrors.Errorf("unregistered data tube")
+func (d *Driver) getDataTube(tube string) *beanstalk.Tube {
+
+	if d.DataTubes[tube] == nil {
+		d.DataTubes[tube] = &beanstalk.Tube{Conn: d.Conn, Name: tube}
 	}
-	return t, nil
+	return d.DataTubes[tube]
 }
 
 // TubeSet Open
