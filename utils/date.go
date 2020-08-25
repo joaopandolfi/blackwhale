@@ -22,65 +22,76 @@ func DateToString(date time.Time) (year string, month string, day string) {
 	return
 }
 
-func DateToInt(date time.Time) int{
+func DateToInt(date time.Time) int {
 	strDate := date.Format("20060102")
-	idate,_ := strconv.Atoi(strDate)
+	idate, _ := strconv.Atoi(strDate)
 	return idate
 }
 
-func TimestampToString(date int) (year string, month string, day string){
-	y := date/10000
-	date = date - (y*10000)
-	m := date/100
-	d := date - (m*100)
+func TimestampToString(date int) (year string, month string, day string) {
+	y := date / 10000
+	date = date - (y * 10000)
+	m := date / 100
+	d := date - (m * 100)
 
 	year = strconv.Itoa(y)
 	month = strconv.Itoa(m)
 	day = strconv.Itoa(d)
 
-	if(m < 10){
-		month = fmt.Sprintf("0%s",month)
+	if m < 10 {
+		month = fmt.Sprintf("0%s", month)
 	}
-	if(d < 10){
-		day = fmt.Sprintf("0%s",day)
+	if d < 10 {
+		day = fmt.Sprintf("0%s", day)
 	}
 
 	return
 }
 
-func TimestampToIso(date int) (isoDate string){
-	y,m,d := TimestampToString(date)
-	return fmt.Sprintf("%s-%s-%s",y,m,d)
+func TimestampToIso(date int) (isoDate string) {
+	y, m, d := TimestampToString(date)
+	return fmt.Sprintf("%s-%s-%s", y, m, d)
 }
 
-func TimestampToDate(timestamp int) string{
-	y,m,d := TimestampToString(timestamp)
-	return fmt.Sprintf("%s/%s/%s",d,m,y)
+func TimestampToDate(timestamp int) string {
+	y, m, d := TimestampToString(timestamp)
+	return fmt.Sprintf("%s/%s/%s", d, m, y)
 }
 
 // Formar dd/mm/yyyy
-func StringToTimestamp(stringTimestamp string) int{
+func StringToTimestamp(stringTimestamp string) int {
 	splited := strings.Split(stringTimestamp, "/")
-	year,_ := strconv.Atoi(splited[2])
-	month,_ := strconv.Atoi(splited[1])
-	day,_ := strconv.Atoi(splited[0])
+	year, _ := strconv.Atoi(splited[2])
+	month, _ := strconv.Atoi(splited[1])
+	day, _ := strconv.Atoi(splited[0])
 
-	return (year*10000)+(month*100)+(day)
+	return (year * 10000) + (month * 100) + (day)
 }
 
-func IsoToTimestamp(stringTimestamp string) int{
+func IsoToTimestamp(stringTimestamp string) int {
 	splited := strings.Split(stringTimestamp, "-")
-	year,_ := strconv.Atoi(splited[0])
-	month,_ := strconv.Atoi(splited[1])
-	day,_ := strconv.Atoi(splited[2])
+	year, _ := strconv.Atoi(splited[0])
+	month, _ := strconv.Atoi(splited[1])
+	day, _ := strconv.Atoi(splited[2])
 
-	return (year*10000)+(month*100)+(day)
+	return (year * 10000) + (month * 100) + (day)
 }
 
-func IsoToTime(stringTimestamp string) (t time.Time){
+// IsoToTimestamp2 receives 2006-01-02T15:04:05 format
+func IsoToTimestamp2(stringTimestamp string) int {
+	parsed := strings.ReplaceAll(stringTimestamp, "-", "")
+	parsed = strings.ReplaceAll(parsed, "T", "")
+	parsed = strings.ReplaceAll(parsed, ":", "")
+
+	timestamp, _ := strconv.Atoi(parsed)
+
+	return timestamp
+}
+
+func IsoToTime(stringTimestamp string) (t time.Time) {
 	//splited := strings.Split(stringTimestamp, "T")
 
-	t,_ = time.Parse("2006-01-02T15:04:05",stringTimestamp)
+	t, _ = time.Parse("2006-01-02T15:04:05", stringTimestamp)
 	return
 }
 
@@ -88,28 +99,28 @@ func CurrentDate() time.Time {
 	return time.Now().UTC()
 }
 
-func SetCoreDateTimestamp(d int){
+func SetCoreDateTimestamp(d int) {
 	strDate := TimestampToIso(d)
-	coreDate,_ = time.Parse("2006-01-02",strDate)
+	coreDate, _ = time.Parse("2006-01-02", strDate)
 }
 
-func SetCoreDate(d time.Time){
+func SetCoreDate(d time.Time) {
 	coreDate = d
 }
 
-func GetCoreDate() time.Time{
+func GetCoreDate() time.Time {
 	return coreDate
 }
 
-func GetCurrentISOTimestamp() string{
+func GetCurrentISOTimestamp() string {
 	return time.Now().UTC().Format("2006-01-02T15:04:05")
 }
 
 func GetlastDayMonth(month string) int {
-	mt,_ := strconv.Atoi(month)
+	mt, _ := strconv.Atoi(month)
 	mt--
-	days := [13]int{31,28,31,30,31,30,31,31,30,31,30,31,-1}
-	if(mt >=12 ){
+	days := [13]int{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, -1}
+	if mt >= 12 {
 		mt = 12
 	}
 	return days[mt]
@@ -117,7 +128,7 @@ func GetlastDayMonth(month string) int {
 
 func LastDayTimestamp() int {
 	t := time.Now()
-	t = t.AddDate(0,0,-1)
+	t = t.AddDate(0, 0, -1)
 	timestamp, _ := strconv.Atoi(t.Format("20060102")) // 20060102150405 -> AAMMDDhhmmss
 	return timestamp
 }
