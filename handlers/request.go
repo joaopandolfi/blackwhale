@@ -37,13 +37,19 @@ func restResponseError(w http.ResponseWriter, message string) {
 
 // RESTResponse - Make default REST API response
 func RESTResponse(w http.ResponseWriter, resp interface{}) {
-	Response(w, map[string]interface{}{"success": true, "data": resp})
+	Response(w, map[string]interface{}{"success": true, "data": resp}, http.StatusOK)
+}
+
+// RESTResponseWithStatus - Make default REST API response with statuscode
+func RESTResponseWithStatus(w http.ResponseWriter, resp interface{}, status int) {
+	Response(w, map[string]interface{}{"success": true, "data": resp}, status)
 }
 
 // Response - Make default generic response
-func Response(w http.ResponseWriter, resp interface{}) {
+func Response(w http.ResponseWriter, resp interface{}, status int) {
 	// set Header
 	header(w)
+	w.WriteHeader(status)
 	b, err := json.Marshal(resp)
 
 	if err == nil {
