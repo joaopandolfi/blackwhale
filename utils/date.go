@@ -95,6 +95,10 @@ func IsoToTime(stringTimestamp string) (t time.Time) {
 	return
 }
 
+func TimeToIso(t time.Time) string {
+	return t.UTC().Format("2006-01-02T15:04:05")
+}
+
 func CurrentDate() time.Time {
 	return time.Now().UTC()
 }
