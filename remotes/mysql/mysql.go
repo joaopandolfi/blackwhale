@@ -21,3 +21,8 @@ func Init() {
 	Driver.Init("mysql", configurations.Configuration.MysqlUrl)
 	//utils.Info("MySQL Configs", "Url: ", configurations.Configuration.MysqlUrl)
 }
+
+// Close connections with database
+func Close() {
+	Driver.Close()
+}

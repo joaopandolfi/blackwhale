@@ -16,6 +16,7 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
+// Session exported struct
 type Session struct {
 	session *mgo.Session
 }
@@ -28,6 +29,7 @@ var mrec sync.RWMutex
 
 var maxPool int = configurations.Configuration.MongoPool
 
+// NewSessionSsl -
 // Create session with ssl and ignore the validation cert (more common)
 func NewSessionSsl() (s *mgo.Session, err error) {
 	if session.session == nil {
@@ -60,6 +62,7 @@ func NewSessionSsl() (s *mgo.Session, err error) {
 	return s, err
 }
 
+// NewSessionSSLMETHOD2 -
 // Create session with ssl and use sign cert
 func NewSessionSSLMETHOD2() (s *Session, err error) {
 	// --sslCAFile
@@ -98,6 +101,7 @@ func newSession() (s *mgo.Session, err error) {
 	return se, err
 }
 
+// GetPoolSession - return session fom a pool or create a new if do not exists
 func GetPoolSession() (*Session, error) {
 	var err error
 	lenPool := len(pool)
@@ -140,6 +144,7 @@ func GetPoolSession() (*Session, error) {
 	return &pool[pos], err
 }
 
+// FlushPull - clear the session pool
 func FlushPull() {
 	for _, p := range pool {
 		go p.Close()
@@ -155,6 +160,7 @@ func createMgoSession() (*mgo.Session, error) {
 	return newSession()
 }
 
+// NewSession - create a new session with ssl or not based on mongourl
 // https://godoc.org/gopkg.in/mgo.v2#Dial
 func NewSession() (s *Session, err error) {
 	if session.session == nil {
@@ -167,27 +173,32 @@ func NewSession() (s *Session, err error) {
 	return &session, err
 }
 
+// Copy session
 func (s *Session) Copy() *Session {
 	return &Session{s.session.Copy()}
 }
 
+// GetCollection return a specific collection
 // Get mongo collection
 func (s *Session) GetCollection(col string) *mgo.Collection {
 	return s.session.DB(configurations.Configuration.MongoDb).C(col)
 }
 
+// Run arbitrary commando direct on mongo
 func (s *Session) Run(cmd interface{}) {
 	var result interface{}
 	s.session.DB(configurations.Configuration.MongoDb).Run(cmd, result) //.C(col)
 	fmt.Println(result)
 }
 
+// Close session
 func (s *Session) Close() {
 	if s.session != nil {
 		s.session.Close()
 	}
 }
 
+// Health check sanity of connection
 func (s *Session) Health() error {
 	if s.session != nil {
 		return s.session.Ping()

@@ -6,11 +6,13 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// Index -
 type Index struct {
 	N   int    `json:"n"`
 	Key string `json:"key"`
 }
 
+// GetSession - return session from a pool
 func GetSession() *Session {
 	session, err := GetPoolSession() //NewSession()
 	//session, err := NewSession()
@@ -22,18 +24,19 @@ func GetSession() *Session {
 	return session
 }
 
+// GenericInsert - insert new item on database
 func GenericInsert(collection string, data interface{}) error {
 	session := GetSession()
-	//defer session.Close()
-
 	return session.GetCollection(collection).Insert(&data)
 }
 
+// Run specific command
 func Run(cmd interface{}) {
 	session := GetSession()
 	session.Run(cmd)
 }
 
+// CreateIndex create index on collection and key
 func CreateIndex(collection string, keys ...string) error {
 	session := GetSession()
 	col := session.GetCollection(collection)
@@ -41,6 +44,7 @@ func CreateIndex(collection string, keys ...string) error {
 	return nil
 }
 
+// GetNextID returns next incremental id
 func GetNextID(key string) (id int) {
 	session := GetSession()
 	col := session.GetCollection("whale_counter")
@@ -64,8 +68,7 @@ func GetNextID(key string) (id int) {
 	return
 }
 
+// Close all connections
 func Close() {
-	session := GetSession()
-	session.Close()
 	FlushPull()
 }
