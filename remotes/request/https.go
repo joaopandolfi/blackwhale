@@ -59,7 +59,7 @@ func PostWithHeader2(url string, head map[string]string, data []byte) ([]byte, i
 	b, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		return nil, resp.StatusCode, xerrors.Errorf("[PostWithHeader2] - Error on Read Body result, URL: %s, DATA: %s , ERROR: %w", url, string(data), err)
+		return b, resp.StatusCode, xerrors.Errorf("[PostWithHeader2] - Error on Read Body result, URL: %s, DATA: %s , ERROR: %w", url, string(data), err)
 	}
 
 	return b, resp.StatusCode, err
