@@ -42,6 +42,7 @@ type Opsec struct {
 	JWTSecret     string
 	TokenValidity int
 	DefaultPwd    string
+	AESKEY        string
 }
 
 type Configurations struct {
@@ -179,6 +180,7 @@ func LoadFromFile(path string) Configurations {
 			TLSCert:       fconf["TLS_CERT"],
 			TLSKey:        fconf["TLS_KEY"],
 			JWTSecret:     fconf["JWT_SECRET"],
+			AESKEY:        fconf["AES_KEY"],
 			TokenValidity: tkVal,
 			DefaultPwd:    fconf["SERVER_DEFAULT_PASSWORD"],
 		},
@@ -259,6 +261,7 @@ func Load() {
 			TLSCert:       "",
 			TLSKey:        "",
 			JWTSecret:     "",
+			AESKEY:        "-weak key :( -",
 			TokenValidity: 60,
 		},
 
