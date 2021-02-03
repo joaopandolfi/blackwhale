@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/pkg/errors"
+	"golang.org/x/xerrors"
 )
 
 func Get(url string) (body []byte) {
@@ -37,13 +38,7 @@ func Get(url string) (body []byte) {
 	return
 }
 
-func PostWithHeader(url string, head map[string]string, data []byte) (body []byte, err error) {
-	/*defer func() {
-		if r := recover(); r != nil {
-			fmt.Println("Error on", r)
-		}
-	}()*/
-
+func PostWithHeader2(url string, head map[string]string, data []byte) ([]byte, int, error) {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
@@ -58,17 +53,23 @@ func PostWithHeader(url string, head map[string]string, data []byte) (body []byt
 
 	resp, err := client.Do(req)
 	if err != nil {
-		err = errors.New(fmt.Sprintf("[PostWithHeader] - Error on make POST request, URL: %s, DATA: %s , ERROR: %s", url, string(data), err.Error()))
-		return
+		return nil, resp.StatusCode, xerrors.Errorf("[PostWithHeader2] - Error on make POST request, URL: %s, DATA: %s , ERROR: %w", url, string(data), err)
 	}
 
-	body, err = ioutil.ReadAll(resp.Body)
+	b, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		err = errors.New(fmt.Sprintf("[PostWithHeader] - Error on Read Body result, URL: %s, DATA: %s , ERROR: %s", url, string(data), err.Error()))
+		return nil, resp.StatusCode, xerrors.Errorf("[PostWithHeader2] - Error on Read Body result, URL: %s, DATA: %s , ERROR: %w", url, string(data), err)
 	}
 
-	if resp.StatusCode == 400 {
+	return b, resp.StatusCode, err
+}
+
+func PostWithHeader(url string, head map[string]string, data []byte) (body []byte, err error) {
+
+	body, statuscode, err := PostWithHeader2(url, head, data)
+
+	if statuscode == 400 {
 		err = errors.New("[PostWithHeader] - Got Message error 400")
 	}
 
