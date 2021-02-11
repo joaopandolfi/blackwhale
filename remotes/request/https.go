@@ -11,6 +11,7 @@ import (
 	"golang.org/x/xerrors"
 )
 
+// Get - basic call a get command
 func Get(url string) (body []byte) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -38,13 +39,17 @@ func Get(url string) (body []byte) {
 	return
 }
 
+// PostWithHeder2 - make post and aggregate statuscode response
 func PostWithHeader2(url string, head map[string]string, data []byte) ([]byte, int, error) {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	client := &http.Client{Transport: tr}
 
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	if err != nil {
+		return nil, 0, xerrors.Errorf("making requester: %w", err)
+	}
 
 	//Setting Headers
 	for k, v := range head {
@@ -65,6 +70,7 @@ func PostWithHeader2(url string, head map[string]string, data []byte) ([]byte, i
 	return b, resp.StatusCode, err
 }
 
+// PostWithHeader -
 func PostWithHeader(url string, head map[string]string, data []byte) (body []byte, err error) {
 
 	body, statuscode, err := PostWithHeader2(url, head, data)
@@ -76,6 +82,7 @@ func PostWithHeader(url string, head map[string]string, data []byte) (body []byt
 	return
 }
 
+// Post - simple post
 func Post(url string, data []byte) (body []byte, err error) {
 
 	defer func() {
@@ -89,7 +96,10 @@ func Post(url string, data []byte) (body []byte, err error) {
 	}
 	client := &http.Client{Transport: tr}
 
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	if err != nil {
+		return nil, xerrors.Errorf("making requester: %w", err)
+	}
 
 	req.Header.Set("Content-Type", "application/json")
 
@@ -112,6 +122,7 @@ func Post(url string, data []byte) (body []byte, err error) {
 	return
 }
 
+// GetWithHeader -
 func GetWithHeader(url string, head map[string]string) (body []byte, err error) {
 
 	tr := &http.Transport{
@@ -119,7 +130,10 @@ func GetWithHeader(url string, head map[string]string) (body []byte, err error) 
 	}
 	client := &http.Client{Transport: tr}
 
-	req, _ := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, xerrors.Errorf("making requester: %w", err)
+	}
 
 	//Setting Headers
 	for k, v := range head {
