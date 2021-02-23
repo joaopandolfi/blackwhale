@@ -1,6 +1,7 @@
 package graphite
 
 import (
+	"fmt"
 	"strconv"
 
 	conf "github.com/joaopandolfi/blackwhale/configurations"
@@ -9,13 +10,14 @@ import (
 
 // Driver graphite
 type Driver struct {
-	Conn *graphite.Graphite
+	Conn   *graphite.Graphite
+	Prefix string
 }
 
 var conn *graphite.Graphite
 
 // New Graphite driver
-func New() (*Driver, error) {
+func New(prefix string) (*Driver, error) {
 	port, _ := strconv.Atoi(conf.Configuration.GraphitePort)
 	if conn == nil {
 		c, err := graphite.NewGraphite(conf.Configuration.GraphiteUrl, port)
@@ -25,11 +27,12 @@ func New() (*Driver, error) {
 		conn = c
 	}
 	return &Driver{
-		Conn: conn,
+		Conn:   conn,
+		Prefix: prefix,
 	}, nil
 }
 
 // Send to graphite
 func (d *Driver) Send(key, data string) error {
-	return d.Conn.SimpleSend(key, data)
+	return d.Conn.SimpleSend(fmt.Sprintf("stats.%s.%s", d.Prefix, key), data)
 }
