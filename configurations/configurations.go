@@ -50,6 +50,8 @@ type Configurations struct {
 	MysqlUrl      string
 	PostgreSQL    string
 	BeanstalkdUrl string
+	GraphiteUrl   string
+	GraphitePort  string
 	MongoUrl      string
 	MongoDb       string
 	MongoPool     int
@@ -143,6 +145,8 @@ func LoadFromFile(path string) Configurations {
 		MongoPool: mongoPool,
 
 		BeanstalkdUrl: fconf["BEANSTALKD_URL"] + ":" + fconf["BEANSTALKD_PORT"],
+		GraphitePort:  fconf["GRAPHITE_PORT"],
+		GraphiteUrl:   fconf["GRAPHITE_URL"],
 
 		Port: ":" + fconf["SERVER_PORT"],
 		CORS: fconf["SERVER_CORS"],
