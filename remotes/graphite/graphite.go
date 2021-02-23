@@ -8,6 +8,9 @@ import (
 	graphite "github.com/marpaia/graphite-golang"
 )
 
+var _host string
+var _port int
+
 // Driver graphite
 type Driver struct {
 	Conn   *graphite.Graphite
@@ -16,13 +19,24 @@ type Driver struct {
 
 var conn *graphite.Graphite
 
+func init() {
+	_host = conf.Configuration.GraphiteUrl
+	p, _ := strconv.Atoi(conf.Configuration.GraphitePort)
+	_port = p
+}
+
+// SetCredentials to connection
+func SetCredentials(host string, port int) {
+	_host = host
+	_port = port
+}
+
 // New Graphite driver
 func New(prefix string) (*Driver, error) {
-	port, _ := strconv.Atoi(conf.Configuration.GraphitePort)
 	if conn == nil {
-		c, err := graphite.NewGraphite(conf.Configuration.GraphiteUrl, port)
+		c, err := graphite.NewGraphite(_host, _port)
 		if err != nil {
-			c = graphite.NewGraphiteNop(conf.Configuration.GraphiteUrl, port)
+			c = graphite.NewGraphiteNop(_host, _port)
 		}
 		conn = c
 	}
