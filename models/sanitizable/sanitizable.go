@@ -17,7 +17,7 @@ func (m *Sanitilizable) Sanitize(vals map[string]*string) error {
 	}
 
 	for key, val := range vals {
-		encVal, err := aes.Encrypt(config.Opsec.AESKEY, *val)
+		encVal, err := aes.Encrypt(config.Configuration.Security.AESKEY, *val)
 		if err != nil {
 			return xerrors.Errorf("encrypting %s: %v", key, err)
 		}
@@ -33,7 +33,7 @@ func (m *Sanitilizable) Restore(vals map[string]*string) error {
 	}
 
 	for key, val := range vals {
-		encVal, err := aes.Decrypt(config.Opsec.AESKEY, *val)
+		encVal, err := aes.Decrypt(config.Configuration.Security.AESKEY, *val)
 		if err != nil {
 			return xerrors.Errorf("restoring %s: %v", key, err)
 		}

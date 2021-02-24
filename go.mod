@@ -12,7 +12,7 @@ require (
 	github.com/gorilla/sessions v1.2.0
 	github.com/kr/beanstalk v0.0.0-20180818045031-cae1762e4858
 	github.com/lib/pq v1.5.1
-	github.com/marpaia/graphite-golang v0.0.0-20190519024811-caf161d2c2b1 // indirect
+	github.com/marpaia/graphite-golang v0.0.0-20190519024811-caf161d2c2b1
 	github.com/pkg/errors v0.9.1
 	github.com/unrolled/secure v1.0.7
 	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79
