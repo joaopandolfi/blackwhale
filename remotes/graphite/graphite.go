@@ -88,9 +88,7 @@ func (d *Driver) Count(key string) {
 func (d *Driver) sender() {
 	for {
 		payload := <-_queue
-		fmt.Printf("SENDING: %v \n", payload)
 		d.Conn.SimpleSend(fmt.Sprintf("stats.%s.%s", d.Prefix, payload.Key), payload.Val)
-		fmt.Printf("Sendend stats.%s.%s \n", d.Prefix, payload.Key)
 	}
 }
 
@@ -102,7 +100,6 @@ func (d *Driver) flusher(seconds int) {
 			if k == "" {
 				break
 			}
-			fmt.Printf("flushing: %s \n", k)
 			mu.Lock()
 			buff = _counter[k]
 			_counter[k] = 0
