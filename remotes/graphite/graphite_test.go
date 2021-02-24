@@ -7,7 +7,7 @@ import (
 )
 
 func Test_general(t *testing.T) {
-	SetCredentials("localhost", 2003)
+	SetCredentials("10.0.0.14", 2003)
 	d, err := New("test")
 	if err != nil {
 		fmt.Println(err.Error())

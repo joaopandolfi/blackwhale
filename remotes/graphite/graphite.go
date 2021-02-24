@@ -7,7 +7,6 @@ import (
 	"time"
 
 	conf "github.com/joaopandolfi/blackwhale/configurations"
-	graphite "github.com/marpaia/graphite-golang"
 )
 
 var _host string
@@ -17,6 +16,7 @@ var _counter map[string]int
 
 var _queue chan payload
 var _seconds int
+var _active bool
 
 var mu sync.Mutex
 
@@ -27,11 +27,11 @@ type payload struct {
 
 // Driver graphite
 type Driver struct {
-	Conn   *graphite.Graphite
+	Conn   *Graphite
 	Prefix string
 }
 
-var conn *graphite.Graphite
+var conn *Graphite
 
 func init() {
 	_host = conf.Configuration.GraphiteUrl
@@ -56,9 +56,9 @@ func SetSeconds(seconds int) {
 // New Graphite driver
 func New(prefix string) (*Driver, error) {
 	if conn == nil {
-		c, err := graphite.NewGraphite(_host, _port)
+		c, err := NewGraphite(_host, _port)
 		if err != nil {
-			c = graphite.NewGraphiteNop(_host, _port)
+			c = NewGraphiteNop(_host, _port)
 		}
 		conn = c
 	}
@@ -85,6 +85,12 @@ func (d *Driver) Count(key string) {
 	mu.Unlock()
 }
 
+// Shutdown - For use on graceful shutdown
+func (d *Driver) Shutdown() {
+	_active = false
+	d.flush()
+}
+
 func (d *Driver) sender() {
 	for {
 		payload := <-_queue
@@ -92,23 +98,28 @@ func (d *Driver) sender() {
 	}
 }
 
-func (d *Driver) flusher(seconds int) {
+func (d *Driver) flush() {
 	var buff int
-	for {
-		time.Sleep(time.Duration(seconds) * time.Second)
-		for k := range _counter {
-			if k == "" {
-				break
-			}
-			mu.Lock()
-			buff = _counter[k]
-			_counter[k] = 0
-			mu.Unlock()
-
-			_queue <- payload{
-				Key: k,
-				Val: fmt.Sprint(buff),
-			}
+	for k := range _counter {
+		if k == "" {
+			break
 		}
+		mu.Lock()
+		buff = _counter[k]
+		_counter[k] = 0
+		mu.Unlock()
+
+		_queue <- payload{
+			Key: k,
+			Val: fmt.Sprint(buff),
+		}
+	}
+}
+
+func (d *Driver) flusher(seconds int) {
+	_active = true
+	for _active {
+		time.Sleep(time.Duration(seconds) * time.Second)
+		d.flush()
 	}
 }
