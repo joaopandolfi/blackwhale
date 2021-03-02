@@ -42,6 +42,20 @@ func New() (*Driver, error) {
 	}, nil
 }
 
+// Fresh return a new connection
+func Fresh() (*Driver, error) {
+
+	c, err := beanstalk.Dial("tcp", c.Configuration.BeanstalkdUrl)
+	if err != nil {
+		return nil, xerrors.Errorf("connecting on beanstalkd: %w", err)
+	}
+	return &Driver{
+		Conn:        c,
+		DataTubes:   map[string]*beanstalk.Tube{},
+		HandleTubes: map[string]*beanstalk.TubeSet{},
+	}, nil
+}
+
 // ReadTube data
 func (d *Driver) ReadTube(tube string, timeout time.Duration) (uint64, []byte, error) {
 	t := d.getHandleTube(tube)
