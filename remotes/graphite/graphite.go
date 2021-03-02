@@ -135,6 +135,9 @@ func (d *Driver) flush() {
 		_counter[k] = 0
 		mu.Unlock()
 
+		if buff == 0 {
+			continue
+		}
 		_queue <- payload{
 			Key: k,
 			Val: fmt.Sprint(buff),
@@ -151,6 +154,9 @@ func (d *Driver) flush() {
 		_histogram[k].Mean = 0
 		muH.Unlock()
 
+		if buff == 0 {
+			continue
+		}
 		_queue <- payload{
 			Key: k,
 			Val: fmt.Sprint(buff),
