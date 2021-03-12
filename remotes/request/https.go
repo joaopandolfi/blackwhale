@@ -13,12 +13,6 @@ import (
 
 // Get - basic call a get command
 func Get(url string) (body []byte) {
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println("Error on", r)
-		}
-	}()
-
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
@@ -29,6 +23,13 @@ func Get(url string) (body []byte) {
 		fmt.Println(err)
 		return
 	}
+
+	defer func() {
+		resp.Body.Close()
+		if r := recover(); r != nil {
+			fmt.Println("Error on", r)
+		}
+	}()
 
 	body, err = ioutil.ReadAll(resp.Body)
 
@@ -60,6 +61,8 @@ func PostWithHeader2(url string, head map[string]string, data []byte) ([]byte, i
 	if err != nil {
 		return nil, resp.StatusCode, xerrors.Errorf("[PostWithHeader2] - Error on make POST request, URL: %s, DATA: %s , ERROR: %w", url, string(data), err)
 	}
+
+	defer resp.Body.Close()
 
 	b, err := ioutil.ReadAll(resp.Body)
 
@@ -108,6 +111,7 @@ func Post(url string, data []byte) (body []byte, err error) {
 		err = errors.New(fmt.Sprintf("[Post] - Error on make POST request, URL: %s, DATA: %s , ERROR: %s", url, string(data), err.Error()))
 		return
 	}
+	defer resp.Body.Close()
 
 	body, err = ioutil.ReadAll(resp.Body)
 
@@ -146,6 +150,7 @@ func GetWithHeader(url string, head map[string]string) (body []byte, err error) 
 		return
 	}
 
+	defer resp.Body.Close()
 	body, err = ioutil.ReadAll(resp.Body)
 
 	if err != nil {
