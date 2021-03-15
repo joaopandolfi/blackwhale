@@ -64,8 +64,14 @@ func CheckJwtToken(tokenString string) (Token, error) {
 
 // NewJwtToken - Crete token with expiration time
 func NewJwtToken(t Token, expMinutes int) (string, error) {
+	t.Authorized = true
+	return NewJwtTokenV2(t, expMinutes)
+}
+
+// NewJwtTokenV2 - Crete token with expiration time
+func NewJwtTokenV2(t Token, expMinutes int) (string, error) {
 	atClaims := jwt.MapClaims{}
-	atClaims["authorized"] = true
+	atClaims["authorized"] = t.Authorized
 	atClaims["id"] = t.ID
 	atClaims["institution"] = t.Institution
 	atClaims["permission"] = t.Permission
