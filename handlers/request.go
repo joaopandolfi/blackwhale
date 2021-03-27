@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -26,11 +27,17 @@ var wordBarrierRegex = regexp.MustCompile(`([a-z_0-9])([A-Z])`)
 // marshaler
 var marshaler func(v interface{}) ([]byte, error) = json.Marshal
 
+// ActiveSnakeCase default json encoder
 func ActiveSnakeCase() {
 	marshaler = func(v interface{}) ([]byte, error) {
 		marshaler := conjson.NewMarshaler(v, transform.ConventionalKeys())
 		return json.MarshalIndent(marshaler, "", " ")
 	}
+}
+
+// SnakeCaseDecoder json
+func SnakeCaseDecoder(r io.Reader) conjson.Decoder {
+	return conjson.NewDecoder(json.NewDecoder(r), transform.ConventionalKeys(), transform.ValidIdentifierKeys())
 }
 
 // header -
