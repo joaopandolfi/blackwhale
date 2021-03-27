@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -15,6 +17,31 @@ import (
 )
 
 // --- Responses ---
+
+// Regexp definitions
+var keyMatchRegex = regexp.MustCompile(`\"(\w+)\":`)
+var wordBarrierRegex = regexp.MustCompile(`(\w)([A-Z])`)
+
+// marshaler
+var marshaler func(v interface{}) ([]byte, error) = json.Marshal
+
+func ActiveSnakeCase() {
+	marshaler = func(v interface{}) ([]byte, error) {
+		marshalled, err := json.Marshal(v)
+
+		converted := keyMatchRegex.ReplaceAllFunc(
+			marshalled,
+			func(match []byte) []byte {
+				return bytes.ToLower(wordBarrierRegex.ReplaceAll(
+					match,
+					[]byte(`${1}_${2}`),
+				))
+			},
+		)
+
+		return converted, err
+	}
+}
 
 // header -
 func header(w http.ResponseWriter) {
@@ -50,7 +77,7 @@ func Response(w http.ResponseWriter, resp interface{}, status int) {
 	// set Header
 	header(w)
 	w.WriteHeader(status)
-	b, err := json.Marshal(resp)
+	b, err := marshaler(resp)
 
 	if err == nil {
 		// Responde
@@ -65,7 +92,7 @@ func Response(w http.ResponseWriter, resp interface{}, status int) {
 func ResponseError(w http.ResponseWriter, resp interface{}) {
 	// set Header
 	header(w)
-	b, _ := json.Marshal(resp)
+	b, _ := marshaler(resp)
 	responseError(w, string(b))
 }
 
@@ -73,7 +100,7 @@ func ResponseError(w http.ResponseWriter, resp interface{}) {
 func RESTResponseError(w http.ResponseWriter, resp interface{}) {
 	// set Header
 	header(w)
-	b, _ := json.Marshal(resp)
+	b, _ := marshaler(resp)
 	restResponseError(w, string(b))
 }
 
