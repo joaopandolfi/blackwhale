@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -13,6 +12,8 @@ import (
 	"github.com/gorilla/schema"
 	"github.com/gorilla/sessions"
 	"github.com/joaopandolfi/blackwhale/configurations"
+	"github.com/joaopandolfi/blackwhale/handlers/conjson"
+	"github.com/joaopandolfi/blackwhale/handlers/conjson/transform"
 	"github.com/joaopandolfi/blackwhale/utils"
 )
 
@@ -27,19 +28,8 @@ var marshaler func(v interface{}) ([]byte, error) = json.Marshal
 
 func ActiveSnakeCase() {
 	marshaler = func(v interface{}) ([]byte, error) {
-		marshalled, err := json.Marshal(v)
-
-		converted := keyMatchRegex.ReplaceAllFunc(
-			marshalled,
-			func(match []byte) []byte {
-				return bytes.ToLower(wordBarrierRegex.ReplaceAll(
-					match,
-					[]byte(`${1}_${2}`),
-				))
-			},
-		)
-
-		return converted, err
+		marshaler := conjson.NewMarshaler(v, transform.ConventionalKeys())
+		return json.MarshalIndent(marshaler, "", " ")
 	}
 }
 
