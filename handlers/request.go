@@ -20,7 +20,7 @@ import (
 
 // Regexp definitions
 var keyMatchRegex = regexp.MustCompile(`\"(\w+)\":`)
-var wordBarrierRegex = regexp.MustCompile(`(\w)([A-Z])`)
+var wordBarrierRegex = regexp.MustCompile(`(\w{2,})([A-Z])`)
 
 // marshaler
 var marshaler func(v interface{}) ([]byte, error) = json.Marshal
