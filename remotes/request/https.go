@@ -40,14 +40,13 @@ func Get(url string) (body []byte) {
 	return
 }
 
-// PostWithHeder2 - make post and aggregate statuscode response
-func PostWithHeader2(url string, head map[string]string, data []byte) ([]byte, int, error) {
+func RequestWithHeader(method, url string, head map[string]string, data []byte) ([]byte, int, error) {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	client := &http.Client{Transport: tr}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, 0, xerrors.Errorf("making requester: %w", err)
 	}
@@ -59,7 +58,7 @@ func PostWithHeader2(url string, head map[string]string, data []byte) ([]byte, i
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, resp.StatusCode, xerrors.Errorf("[PostWithHeader2] - Error on make POST request, URL: %s, DATA: %s , ERROR: %w", url, string(data), err)
+		return nil, resp.StatusCode, xerrors.Errorf("[RequestWithHeader] - Error on make %s request, URL: %s, DATA: %s , ERROR: %w", method, url, string(data), err)
 	}
 
 	defer resp.Body.Close()
@@ -67,10 +66,15 @@ func PostWithHeader2(url string, head map[string]string, data []byte) ([]byte, i
 	b, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		return b, resp.StatusCode, xerrors.Errorf("[PostWithHeader2] - Error on Read Body result, URL: %s, DATA: %s , ERROR: %w", url, string(data), err)
+		return b, resp.StatusCode, xerrors.Errorf("[RequestWithHeader] - Error on Read Body result, URL: %s, DATA: %s , ERROR: %w", url, string(data), err)
 	}
 
 	return b, resp.StatusCode, err
+}
+
+// PostWithHeder2 - make post and aggregate statuscode response
+func PostWithHeader2(url string, head map[string]string, data []byte) ([]byte, int, error) {
+	return RequestWithHeader("POST", url, head, data)
 }
 
 // PostWithHeader -
