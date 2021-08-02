@@ -26,6 +26,8 @@ const TIMEOUT_DEFAULT time.Duration = 0
 
 var conn *beanstalk.Conn
 
+// TODO: MAKE RESILIENT
+
 // New beanstalkd driver
 func New() (*Driver, error) {
 	if conn == nil {

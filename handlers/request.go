@@ -15,6 +15,7 @@ import (
 	"github.com/joaopandolfi/blackwhale/configurations"
 	"github.com/joaopandolfi/blackwhale/handlers/conjson"
 	"github.com/joaopandolfi/blackwhale/handlers/conjson/transform"
+	"github.com/joaopandolfi/blackwhale/handlers/errors"
 	"github.com/joaopandolfi/blackwhale/utils"
 )
 
@@ -62,6 +63,12 @@ func restResponseError(w http.ResponseWriter, message string) {
 // RESTResponse - Make default REST API response
 func RESTResponse(w http.ResponseWriter, resp interface{}) {
 	Response(w, map[string]interface{}{"success": true, "data": resp}, http.StatusOK)
+}
+
+func ResponseTypedError(w http.ResponseWriter, code int, message string, stack error) {
+	b, _ := json.Marshal(errors.NewTypedError(code, message, stack))
+	w.WriteHeader(http.StatusInternalServerError)
+	w.Write(b)
 }
 
 // RESTResponseWithStatus - Make default REST API response with statuscode
