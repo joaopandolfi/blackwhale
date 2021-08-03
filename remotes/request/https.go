@@ -6,17 +6,33 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/pkg/errors"
 	"golang.org/x/xerrors"
 )
 
+var transport *http.Transport
+var defaultTimeout time.Duration = time.Minute * 10
+
+func getTransport() *http.Transport {
+	if transport == nil {
+		transport = &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+		http.DefaultClient.Timeout = defaultTimeout
+	}
+	return transport
+}
+
+// SetDefaultTimeout to requests
+func SetDefaultTimeout(timeout time.Duration) {
+	defaultTimeout = timeout
+}
+
 // Get - basic call a get command
 func Get(url string) (body []byte) {
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	client := &http.Client{Transport: tr}
+	client := &http.Client{Transport: getTransport()}
 	resp, err := client.Get(url)
 
 	if err != nil {
@@ -41,10 +57,7 @@ func Get(url string) (body []byte) {
 }
 
 func RequestWithHeader(method, url string, head map[string]string, data []byte) ([]byte, int, error) {
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	client := &http.Client{Transport: tr}
+	client := &http.Client{Transport: getTransport()}
 
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 	if err != nil {
@@ -92,16 +105,7 @@ func PostWithHeader(url string, head map[string]string, data []byte) (body []byt
 // Post - simple post
 func Post(url string, data []byte) (body []byte, err error) {
 
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println("Error on HTTP POST", r)
-		}
-	}()
-
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	client := &http.Client{Transport: tr}
+	client := &http.Client{Transport: getTransport()}
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 	if err != nil {
@@ -115,7 +119,13 @@ func Post(url string, data []byte) (body []byte, err error) {
 		err = errors.New(fmt.Sprintf("[Post] - Error on make POST request, URL: %s, DATA: %s , ERROR: %s", url, string(data), err.Error()))
 		return
 	}
-	defer resp.Body.Close()
+
+	defer func() {
+		resp.Body.Close()
+		if r := recover(); r != nil {
+			fmt.Println("Error on HTTP POST", r)
+		}
+	}()
 
 	body, err = ioutil.ReadAll(resp.Body)
 
@@ -132,11 +142,7 @@ func Post(url string, data []byte) (body []byte, err error) {
 
 // GetWithHeader -
 func GetWithHeader(url string, head map[string]string) (body []byte, err error) {
-
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	client := &http.Client{Transport: tr}
+	client := &http.Client{Transport: getTransport()}
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
