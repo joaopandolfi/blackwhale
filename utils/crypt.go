@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 
 	jwt "github.com/golang-jwt/jwt/v4"
@@ -49,9 +48,8 @@ func CheckJwtToken(tokenString string) (Token, error) {
 		return Token{Authorized: false}, fmt.Errorf("invalid Token")
 	}
 
-	exps := claims["exp"].(string)
-	exp, _ := strconv.ParseInt(exps, 10, 64)
-	if exp < time.Now().Unix() {
+	exps := claims["exp"].(float64)
+	if int64(exps) < time.Now().Unix() {
 		return Token{Authorized: false}, fmt.Errorf("expired token")
 	}
 
@@ -76,7 +74,7 @@ func NewJwtTokenV2(t Token, expMinutes int) (string, error) {
 	atClaims["id"] = t.ID
 	atClaims["institution"] = t.Institution
 	atClaims["permission"] = t.Permission
-	atClaims["exp"] = fmt.Sprintf("%v", time.Now().Add(time.Minute*time.Duration(expMinutes)).Unix())
+	atClaims["exp"] = time.Now().Add(time.Minute * time.Duration(expMinutes)).Unix()
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 	token, err := at.SignedString([]byte(configurations.Configuration.Security.JWTSecret))
 	if err != nil {
