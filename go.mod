@@ -21,6 +21,7 @@ require (
 	github.com/marpaia/graphite-golang v0.0.0-20190519024811-caf161d2c2b1
 	github.com/mattn/goveralls v0.0.2 // indirect
 	github.com/pkg/errors v0.9.1
+	github.com/streadway/amqp v1.0.0
 	github.com/unrolled/secure v1.0.9
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	golang.org/x/tools v0.0.0-20181221001348-537d06c36207 // indirect

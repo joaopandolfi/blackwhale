@@ -50,6 +50,7 @@ type Configurations struct {
 	MysqlUrl      string
 	PostgreSQL    string
 	BeanstalkdUrl string
+	RabbitMQURL   string
 	GraphiteUrl   string
 	GraphitePort  string
 	MongoUrl      string
@@ -145,6 +146,7 @@ func LoadFromFile(path string) Configurations {
 		MongoPool: mongoPool,
 
 		BeanstalkdUrl: fconf["BEANSTALKD_URL"] + ":" + fconf["BEANSTALKD_PORT"],
+		RabbitMQURL:   fmt.Sprintf("amqp://%s:%s@%s:%s/", fconf["RABBITMQ_USERNAME"], fconf["RABBITMQ_PASSWORD"], fconf["RABBITMQ_URL"], fconf["RABBITMQ_PORT"]),
 		GraphitePort:  fconf["GRAPHITE_PORT"],
 		GraphiteUrl:   fconf["GRAPHITE_URL"],
 
