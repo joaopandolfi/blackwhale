@@ -116,6 +116,19 @@ func (d *Driver) Consume(tube string) (<-chan amqp.Delivery, error) {
 	)
 }
 
+// ConsumeSecure force the message can call m.Ack(true)
+func (d *Driver) ConsumeSecure(tube string) (<-chan amqp.Delivery, error) {
+	return d.Channel.Consume(
+		tube,  // queue
+		"",    // consumer
+		false, // auto-ack
+		false, // exclusive
+		false, // no-local
+		false, // no-wait
+		nil,   // args
+	)
+}
+
 func shutdown(c *amqp.Connection, ch *amqp.Channel) error {
 	if c != nil {
 		err := c.Close()
