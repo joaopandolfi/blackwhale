@@ -115,3 +115,27 @@ func (d *Driver) Consume(tube string) (<-chan amqp.Delivery, error) {
 		nil,   // args
 	)
 }
+
+func shutdown(c *amqp.Connection, ch *amqp.Channel) error {
+	if c != nil {
+		err := c.Close()
+		if err != nil {
+			return xerrors.Errorf("closing connection: %w", err)
+		}
+	}
+	if ch != nil {
+		err := ch.Close()
+		if err != nil {
+			return xerrors.Errorf("closing channel: %w", err)
+		}
+	}
+	return nil
+}
+
+func (d *Driver) Shutdown() error {
+	return shutdown(d.Conn, d.Channel)
+}
+
+func Shutdown() error {
+	return shutdown(conn, chanel)
+}
