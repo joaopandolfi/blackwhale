@@ -71,6 +71,12 @@ func ResponseTypedError(w http.ResponseWriter, code int, message string, stack e
 	w.Write(b)
 }
 
+func ResponseTypedErrorWithStatus(w http.ResponseWriter, statusCode, code int, message string, stack error) {
+	b, _ := json.Marshal(errors.NewTypedError(code, message, stack))
+	w.WriteHeader(statusCode)
+	w.Write(b)
+}
+
 // RESTResponseWithStatus - Make default REST API response with statuscode
 func RESTResponseWithStatus(w http.ResponseWriter, resp interface{}, status int) {
 	Response(w, map[string]interface{}{"success": true, "data": resp}, status)
