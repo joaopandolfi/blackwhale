@@ -71,7 +71,11 @@ func RequestWithHeader(method, url string, head map[string]string, data []byte) 
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, resp.StatusCode, xerrors.Errorf("[RequestWithHeader] - Error on make %s request, URL: %s, DATA: %s , ERROR: %w", method, url, string(data), err)
+		statusCode := http.StatusBadRequest
+		if resp != nil {
+			statusCode = resp.StatusCode
+		}
+		return nil, statusCode, xerrors.Errorf("[RequestWithHeader] - Error on make %s request, URL: %s, DATA: %s , ERROR: %w", method, url, string(data), err)
 	}
 
 	defer resp.Body.Close()
