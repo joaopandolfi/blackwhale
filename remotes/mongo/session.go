@@ -160,6 +160,15 @@ func createMgoSession() (*mgo.Session, error) {
 	return newSession()
 }
 
+func NewSessionManual(url string) (s *Session, err error) {
+	se, err := mgo.Dial(url)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Session{session: se}, err
+}
+
 // NewSession - create a new session with ssl or not based on mongourl
 // https://godoc.org/gopkg.in/mgo.v2#Dial
 func NewSession() (s *Session, err error) {
