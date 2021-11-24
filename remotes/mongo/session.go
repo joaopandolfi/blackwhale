@@ -193,6 +193,12 @@ func (s *Session) GetCollection(col string) *mgo.Collection {
 	return s.session.DB(configurations.Configuration.MongoDb).C(col)
 }
 
+// GetCollectionOnDB return a specific collection on database
+// Get mongo collection
+func (s *Session) GetCollectionOnDB(db, col string) *mgo.Collection {
+	return s.session.DB(db).C(col)
+}
+
 // Run arbitrary commando direct on mongo
 func (s *Session) Run(cmd interface{}) {
 	var result interface{}
