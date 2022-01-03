@@ -19,8 +19,8 @@ func LoadVault(host, token, privKey string) (map[string]string, error) {
 	server := fmt.Sprintf("%s/vault/recover", host)
 
 	b, err := request.GetWithHeader(server, map[string]string{
-		"priv_key": privKey,
-		"token":    token,
+		"key":   privKey,
+		"token": token,
 	})
 	if err != nil {
 		return nil, xerrors.Errorf("loading vault from server (%s): %w", server, err)
