@@ -118,10 +118,8 @@ func LoadConfig(c Configurations) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 }
 
-// LoadFromFile configurations
-func LoadFromFile(path string) Configurations {
-	fconf := LoadJsonFile(path)
-
+// LoadFromMap load configurations from map
+func LoadFromMap(fconf map[string]string) Configurations {
 	tkVal, _ := strconv.Atoi(fconf["TOKEN_VALIDITY_MINUTES"])
 	mongoPool, _ := strconv.Atoi(fconf["MONGO_POOL"])
 	timeout, _ := strconv.Atoi(fconf["SERVER_TIMEOUT"])
@@ -204,6 +202,11 @@ func LoadFromFile(path string) Configurations {
 			RemoteHost: "localhosy:443",
 		},
 	}
+}
+
+// LoadFromFile configurations
+func LoadFromFile(path string) Configurations {
+	return LoadFromMap(LoadJsonFile(path))
 }
 
 // Load default configurations
