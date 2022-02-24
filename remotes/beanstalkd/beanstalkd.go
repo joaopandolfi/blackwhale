@@ -80,6 +80,15 @@ func (d *Driver) DeleteMessage(tube string, id uint64) error {
 	return nil
 }
 
+func (d *Driver) ReleaseMessage(tube string, id uint64) error {
+	t := d.getDataTube(tube)
+	err := t.Conn.Release(id, PRIORITY_NORMAL, 0)
+	if err != nil {
+		return xerrors.Errorf("releasing message on tube [%v][%v]: %w", tube, id, err)
+	}
+	return nil
+}
+
 // BuryMessage on tube
 func (d *Driver) BuryMessage(tube string, id uint64, priority uint32) error {
 	t := d.getDataTube(tube)
