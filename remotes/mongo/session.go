@@ -31,9 +31,9 @@ var maxPool int = configurations.Configuration.MongoPool
 
 // NewSessionSsl -
 // Create session with ssl and ignore the validation cert (more common)
-func NewSessionSsl() (s *mgo.Session, err error) {
+func NewSessionSsl(mongoURL string) (s *mgo.Session, err error) {
 	if session.session == nil {
-		url := strings.Replace(configurations.Configuration.MongoUrl, "ssl=true", "", -1)
+		url := strings.Replace(mongoURL, "ssl=true", "", -1)
 		url = strings.Replace(url, "readPreference=secondaryPreferred", "", -1)
 		dialInfo, err := mgo.ParseURL(url)
 		if err != nil {
@@ -64,7 +64,7 @@ func NewSessionSsl() (s *mgo.Session, err error) {
 
 // NewSessionSSLMETHOD2 -
 // Create session with ssl and use sign cert
-func NewSessionSSLMETHOD2() (s *Session, err error) {
+func NewSessionSSLMETHOD2(mongoURL string) (s *Session, err error) {
 	// --sslCAFile
 	rootCerts := x509.NewCertPool()
 	if ca, err := ioutil.ReadFile("ca.crt"); err == nil {
@@ -79,7 +79,7 @@ func NewSessionSSLMETHOD2() (s *Session, err error) {
 
 	// Dial with TLS
 	sess, err := mgo.DialWithInfo(&mgo.DialInfo{
-		Addrs: []string{configurations.Configuration.MongoUrl},
+		Addrs: []string{mongoURL},
 		DialServer: func(addr *mgo.ServerAddr) (net.Conn, error) {
 			return tls.Dial("tcp", addr.String(), &tls.Config{
 				RootCAs:      rootCerts,
@@ -93,8 +93,8 @@ func NewSessionSSLMETHOD2() (s *Session, err error) {
 }
 
 // Create session without ssl
-func newSession() (s *mgo.Session, err error) {
-	se, err := mgo.Dial(configurations.Configuration.MongoUrl)
+func newSession(mongoURL string) (s *mgo.Session, err error) {
+	se, err := mgo.Dial(mongoURL)
 	if err != nil {
 		return nil, err
 	}
@@ -103,6 +103,11 @@ func newSession() (s *mgo.Session, err error) {
 
 // GetPoolSession - return session fom a pool or create a new if do not exists
 func GetPoolSession() (*Session, error) {
+	return GetCustomPoolSession(configurations.Configuration.MongoUrl)
+}
+
+// GetCustomPoolSession - return session fom a pool or create a new if do not exists based on mongoURL
+func GetCustomPoolSession(mongoURL string) (*Session, error) {
 	var err error
 	lenPool := len(pool)
 	pos := 0
@@ -113,7 +118,7 @@ func GetPoolSession() (*Session, error) {
 		pos = looper
 		mpos.Unlock()
 
-		s, err := createMgoSession()
+		s, err := createMgoSession(mongoURL)
 
 		if err != nil {
 			return nil, err
@@ -135,7 +140,7 @@ func GetPoolSession() (*Session, error) {
 	if pool[pos].Health() != nil {
 		mrec.Lock()
 		pool[pos].Close()
-		s, errr := createMgoSession()
+		s, errr := createMgoSession(mongoURL)
 		err = errr
 		pool[pos] = Session{session: s}
 		mrec.Unlock()
@@ -153,11 +158,11 @@ func FlushPull() {
 	looper = 0
 }
 
-func createMgoSession() (*mgo.Session, error) {
-	if strings.Contains(configurations.Configuration.MongoUrl, "ssl=") {
-		return NewSessionSsl()
+func createMgoSession(mongoURL string) (*mgo.Session, error) {
+	if strings.Contains(mongoURL, "ssl=") {
+		return NewSessionSsl(mongoURL)
 	}
-	return newSession()
+	return newSession(mongoURL)
 }
 
 func NewSessionManual(url string) (s *Session, err error) {
@@ -169,14 +174,19 @@ func NewSessionManual(url string) (s *Session, err error) {
 	return &Session{session: se}, err
 }
 
-// NewSession - create a new session with ssl or not based on mongourl
+// NewSession - create a new session with ssl or not based on config mongourl
 // https://godoc.org/gopkg.in/mgo.v2#Dial
 func NewSession() (s *Session, err error) {
+	return NewCustomSession(configurations.Configuration.MongoUrl)
+}
+
+// NewCustoSession - create a new session wuth ssl or not based on setted mongo url
+func NewCustomSession(mongoURL string) (s *Session, err error) {
 	if session.session == nil {
-		if strings.Contains(configurations.Configuration.MongoUrl, "ssl=") {
-			session.session, err = NewSessionSsl()
+		if strings.Contains(mongoURL, "ssl=") {
+			session.session, err = NewSessionSsl(mongoURL)
 		} else {
-			session.session, err = newSession()
+			session.session, err = newSession(mongoURL)
 		}
 	}
 	return &session, err
