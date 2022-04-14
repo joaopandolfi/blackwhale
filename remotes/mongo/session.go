@@ -181,21 +181,24 @@ func NewSession() (s *Session, err error) {
 }
 
 func NewCustomSessionFresh(mongoURL string) (s *Session, err error) {
-	s = &Session{}
+	sess := Session{}
 	if strings.Contains(mongoURL, "ssl=") {
-		s.session, err = NewSessionSsl(mongoURL)
+		sess.session, err = NewSessionSsl(mongoURL)
 	} else {
-		s.session, err = newSession(mongoURL)
+		sess.session, err = newSession(mongoURL)
 	}
 
-	return &session, err
+	return &sess, err
 }
 
 // NewCustoSession - create a new session wuth ssl or not based on setted mongo url
 func NewCustomSession(mongoURL string) (s *Session, err error) {
 	if session.session == nil {
-		s, err = NewCustomSessionFresh(mongoURL)
-		session.session = s.session
+		if strings.Contains(mongoURL, "ssl=") {
+			session.session, err = NewSessionSsl(mongoURL)
+		} else {
+			session.session, err = newSession(mongoURL)
+		}
 	}
 	return &session, err
 }
