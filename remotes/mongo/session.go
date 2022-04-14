@@ -180,14 +180,21 @@ func NewSession() (s *Session, err error) {
 	return NewCustomSession(configurations.Configuration.MongoUrl)
 }
 
+func NewCustomSessionFresh(mongoURL string) (s *Session, err error) {
+	if strings.Contains(mongoURL, "ssl=") {
+		s.session, err = NewSessionSsl(mongoURL)
+	} else {
+		s.session, err = newSession(mongoURL)
+	}
+
+	return &session, err
+}
+
 // NewCustoSession - create a new session wuth ssl or not based on setted mongo url
 func NewCustomSession(mongoURL string) (s *Session, err error) {
 	if session.session == nil {
-		if strings.Contains(mongoURL, "ssl=") {
-			session.session, err = NewSessionSsl(mongoURL)
-		} else {
-			session.session, err = newSession(mongoURL)
-		}
+		s, err = NewCustomSessionFresh(mongoURL)
+		session.session = s.session
 	}
 	return &session, err
 }
