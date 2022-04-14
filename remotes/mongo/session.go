@@ -181,6 +181,7 @@ func NewSession() (s *Session, err error) {
 }
 
 func NewCustomSessionFresh(mongoURL string) (s *Session, err error) {
+	s = &Session{}
 	if strings.Contains(mongoURL, "ssl=") {
 		s.session, err = NewSessionSsl(mongoURL)
 	} else {
