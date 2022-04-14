@@ -21,11 +21,10 @@ require (
 	github.com/marpaia/graphite-golang v0.0.0-20190519024811-caf161d2c2b1
 	github.com/mattn/goveralls v0.0.2 // indirect
 	github.com/pkg/errors v0.9.1
+	github.com/prometheus/client_golang v1.12.1 // indirect
 	github.com/streadway/amqp v1.0.0
 	github.com/unrolled/secure v1.0.9
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
-	golang.org/x/tools v0.0.0-20181221001348-537d06c36207 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
-	gopkg.in/yaml.v2 v2.2.2 // indirect
 )
