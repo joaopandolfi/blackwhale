@@ -63,13 +63,11 @@ func prometheusMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func init() {
+func InjectMiddleware(router *mux.Router, path string) {
 	prometheus.Register(totalRequests)
 	prometheus.Register(responseStatus)
 	prometheus.Register(httpDuration)
-}
 
-func InjectMiddleware(router mux.Router, path string) {
 	router.Use(prometheusMiddleware)
 	// Prometheus endpoint
 	router.Path(path).Handler(promhttp.Handler())
