@@ -27,6 +27,9 @@ const (
 
 	// MaxLimit of query
 	MaxLimit = 1000
+
+	// LikeCondition
+	LikeCondition = "ilike"
 )
 
 // DAO generic public interface
@@ -67,12 +70,25 @@ type dao struct {
 	db *gorm.DB
 }
 
+// Generate query based on params
+// Use wisely
 func GenerateQuery(params map[string]string) (string, []interface{}) {
 	query := ""
+	likeQuery := ""
 	data := []interface{}{}
 	and := ""
+	or := ""
 	for k, v := range params {
 		if v == "" {
+			continue
+		}
+
+		if strings.Contains(k, LikeCondition) {
+			ks := strings.Split(k, ":")
+			column := ks[1]
+			likeQuery = fmt.Sprintf("%s %s %s ILIKE ? ", likeQuery, or, column)
+			data = append(data, v)
+			or = " OR "
 			continue
 		}
 
@@ -82,6 +98,14 @@ func GenerateQuery(params map[string]string) (string, []interface{}) {
 		query = fmt.Sprintf("%s %s %s %s ?", query, and, key, condition)
 		data = append(data, v)
 		and = " AND "
+	}
+
+	if likeQuery != "" {
+		if query != "" {
+			query = fmt.Sprintf("%s AND (%s) ", query, likeQuery)
+		} else {
+			query = likeQuery
+		}
 	}
 
 	return query, data
