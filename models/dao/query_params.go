@@ -1,5 +1,9 @@
 package dao
 
+import (
+	"fmt"
+)
+
 type QueryParams struct {
 	data       map[string]interface{}
 	GenericVal string
@@ -23,7 +27,7 @@ func (d *QueryParams) AddParam(column string, condition string, val interface{})
 func (d *QueryParams) AddLike(column, val string) {
 	d.init()
 
-	d.data[fmt.Sprintf("%s:%s", likeParam, column)] = val
+	d.data[fmt.Sprintf("%s:%s", LikeCondition, column)] = val
 }
 
 func (d *QueryParams) Data() *map[string]interface{} {
