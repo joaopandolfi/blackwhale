@@ -85,7 +85,7 @@ func GenerateQuery(params map[string]interface{}) (string, []interface{}) {
 
 		if strings.Contains(k, LikeCondition) {
 			ks := strings.Split(k, ":")
-			column := ks[1]
+			column := ks[0]
 			likeQuery = fmt.Sprintf("%s %s %s ILIKE ? ", likeQuery, or, column)
 			data = append(data, v)
 			or = " OR "
