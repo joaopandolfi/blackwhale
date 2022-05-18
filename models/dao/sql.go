@@ -72,7 +72,7 @@ type dao struct {
 
 // Generate query based on params
 // Use wisely
-func GenerateQuery(params map[string]string) (string, []interface{}) {
+func GenerateQuery(params map[string]interface{}) (string, []interface{}) {
 	query := ""
 	likeQuery := ""
 	data := []interface{}{}
