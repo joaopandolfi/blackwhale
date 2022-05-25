@@ -121,11 +121,28 @@ func Sql(db *gorm.DB) SQLDAO {
 	}
 }
 
+func withDeleteds(db *gorm.DB) *gorm.DB {
+	return db.Unscoped()
+}
+
 func (d *dao) processNested(tx *gorm.DB, nested []string) *gorm.DB {
 	for _, n := range nested {
 		if strings.Contains(n, ":") {
 			splited := strings.Split(n, ":")
-			tx = tx.Preload(splited[0], splited[1:])
+
+			args := splited[1:]
+
+			argsInterfaces := make([]interface{}, len(args))
+
+			for index, value := range args {
+				if value == "withDeleteds" {
+					argsInterfaces[index] = withDeleteds
+					continue
+				}
+				argsInterfaces[index] = value
+			}
+
+			tx = tx.Preload(splited[0], argsInterfaces...)
 		} else {
 			tx = tx.Preload(n)
 		}
