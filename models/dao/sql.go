@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/xerrors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -154,7 +153,7 @@ func (d *dao) processNested(tx *gorm.DB, nested []string) *gorm.DB {
 func (d *dao) Get(id int, v interface{}) error {
 	tx := d.db.Preload(clause.Associations).Find(v, id)
 	if tx.Error != nil {
-		return xerrors.Errorf("get: %w", tx.Error)
+		return fmt.Errorf("get: %w", tx.Error)
 	}
 	return nil
 }
@@ -162,7 +161,7 @@ func (d *dao) Get(id int, v interface{}) error {
 func (d *dao) GetNested(id int, v interface{}, nested []string) error {
 	tx := d.processNested(d.db, nested).Preload(clause.Associations).Find(v, id)
 	if tx.Error != nil {
-		return xerrors.Errorf("get nested: %w", tx.Error)
+		return fmt.Errorf("get nested: %w", tx.Error)
 	}
 	return nil
 }
@@ -170,7 +169,7 @@ func (d *dao) GetNested(id int, v interface{}, nested []string) error {
 func (d *dao) GetWithArguments(id int, v interface{}, query string, args ...interface{}) error {
 	tx := d.db.Preload(clause.Associations).Where(query, args...).Find(v, id)
 	if tx.Error != nil {
-		return xerrors.Errorf("get with args: %w", tx.Error)
+		return fmt.Errorf("get with args: %w", tx.Error)
 	}
 
 	return nil
@@ -179,7 +178,7 @@ func (d *dao) GetWithArguments(id int, v interface{}, query string, args ...inte
 func (d *dao) GetDeletedWithArguments(id int, v interface{}, query string, args ...interface{}) error {
 	tx := d.db.Unscoped().Preload(clause.Associations).Where(query, args...).Find(v, id)
 	if tx.Error != nil {
-		return xerrors.Errorf("get deleted with args: %w", tx.Error)
+		return fmt.Errorf("get deleted with args: %w", tx.Error)
 	}
 
 	return nil
@@ -188,7 +187,7 @@ func (d *dao) GetDeletedWithArguments(id int, v interface{}, query string, args 
 func (d *dao) GetGeneric(v interface{}, nested []string, query string, args ...interface{}) error {
 	tx := d.processNested(d.db, nested).Preload(clause.Associations).Where(query, args...).Find(v)
 	if tx.Error != nil {
-		return xerrors.Errorf("get generic: %w", tx.Error)
+		return fmt.Errorf("get generic: %w", tx.Error)
 	}
 
 	return nil
@@ -197,7 +196,7 @@ func (d *dao) GetGeneric(v interface{}, nested []string, query string, args ...i
 func (d *dao) List(v interface{}, limit int) error {
 	tx := d.db.Limit(limit).Find(v)
 	if tx.Error != nil {
-		return xerrors.Errorf("list: %w", tx.Error)
+		return fmt.Errorf("list: %w", tx.Error)
 	}
 
 	return nil
@@ -206,7 +205,7 @@ func (d *dao) List(v interface{}, limit int) error {
 func (d *dao) ListWithArguments(v interface{}, limit int, query string, args ...interface{}) error {
 	tx := d.db.Where(query, args...).Limit(limit).Find(v)
 	if tx.Error != nil {
-		return xerrors.Errorf(listWithArgsMessage, tx.Error)
+		return fmt.Errorf(listWithArgsMessage, tx.Error)
 	}
 
 	return nil
@@ -215,7 +214,7 @@ func (d *dao) ListWithArguments(v interface{}, limit int, query string, args ...
 func (d *dao) ListWithArgumentsFull(v interface{}, limit int, query string, args ...interface{}) error {
 	tx := d.db.Preload(clause.Associations).Where(query, args...).Limit(limit).Find(v)
 	if tx.Error != nil {
-		return xerrors.Errorf(listWithArgsMessage, tx.Error)
+		return fmt.Errorf(listWithArgsMessage, tx.Error)
 	}
 
 	return nil
@@ -225,7 +224,7 @@ func (d *dao) ListWithArgumentsNestedOrdered(v interface{}, listParams ListParam
 	tx := d.processNested(d.db, nested)
 	tx.Where(query, args...).Order(order).Offset(listParams.Offset).Limit(listParams.Limit).Find(v)
 	if tx.Error != nil {
-		return xerrors.Errorf(listWithArgsMessage, tx.Error)
+		return fmt.Errorf(listWithArgsMessage, tx.Error)
 	}
 
 	return nil
@@ -260,7 +259,7 @@ func (d *dao) ListConditional(v interface{}, params ListParams, query string, ar
 
 	tx = tx.Find(v)
 	if tx.Error != nil {
-		return xerrors.Errorf("listing conditional: %w", tx.Error)
+		return fmt.Errorf("listing conditional: %w", tx.Error)
 	}
 
 	return nil
@@ -269,7 +268,7 @@ func (d *dao) ListConditional(v interface{}, params ListParams, query string, ar
 func (d *dao) ListWithArgumentsFullOrdered(v interface{}, listParams ListParams, order, query string, args ...interface{}) error {
 	tx := d.db.Preload(clause.Associations).Where(query, args...).Order(order).Offset(listParams.Offset).Limit(listParams.Offset).Find(v)
 	if tx.Error != nil {
-		return xerrors.Errorf(listWithArgsMessage, tx.Error)
+		return fmt.Errorf(listWithArgsMessage, tx.Error)
 	}
 
 	return nil
@@ -278,7 +277,7 @@ func (d *dao) ListWithArgumentsFullOrdered(v interface{}, listParams ListParams,
 func (d *dao) New(v interface{}) error {
 	tx := d.db.Create(v)
 	if tx.Error != nil {
-		return xerrors.Errorf("saving: %w", tx.Error)
+		return fmt.Errorf("saving: %w", tx.Error)
 	}
 
 	return nil
@@ -287,7 +286,7 @@ func (d *dao) New(v interface{}) error {
 func (d *dao) Delete(v interface{}) error {
 	tx := d.db.Delete(v)
 	if tx.Error != nil {
-		return xerrors.Errorf("deleting: %w", tx.Error)
+		return fmt.Errorf("deleting: %w", tx.Error)
 	}
 
 	return nil
@@ -296,16 +295,16 @@ func (d *dao) Delete(v interface{}) error {
 func (d *dao) DeleteWithArguments(v interface{}, args ...interface{}) error {
 	tx := d.db.Delete(v, args...)
 	if tx.Error != nil {
-		return xerrors.Errorf("deleting (with args): %w", tx.Error)
+		return fmt.Errorf("deleting (with args): %w", tx.Error)
 	}
 
 	return nil
 }
 
 func (d *dao) Upsert(v interface{}) error {
-	tx := d.db.Session(&gorm.Session{FullSaveAssociations: true}).Save(v)
+	tx := d.db.Clauses(clause.OnConflict{UpdateAll: true}).Session(&gorm.Session{FullSaveAssociations: true}).Save(v)
 	if tx.Error != nil {
-		return xerrors.Errorf("upserting: %w", tx.Error)
+		return fmt.Errorf("upserting: %w", tx.Error)
 	}
 
 	return nil
@@ -314,7 +313,7 @@ func (d *dao) Upsert(v interface{}) error {
 func (d *dao) Update(v interface{}) error {
 	tx := d.db.Model(v).Updates(v)
 	if tx.Error != nil {
-		return xerrors.Errorf("updating: %w", tx.Error)
+		return fmt.Errorf("updating: %w", tx.Error)
 	}
 
 	return nil
@@ -323,7 +322,7 @@ func (d *dao) Update(v interface{}) error {
 func (d *dao) UpdateWhere(v interface{}, val map[string]interface{}, query string, args ...interface{}) error {
 	tx := d.db.Model(v).Where(query, args...).Updates(val)
 	if tx.Error != nil {
-		return xerrors.Errorf("updating where: %w", tx.Error)
+		return fmt.Errorf("updating where: %w", tx.Error)
 	}
 
 	return nil
@@ -332,7 +331,7 @@ func (d *dao) UpdateWhere(v interface{}, val map[string]interface{}, query strin
 func (d *dao) UpdateWithMap(v interface{}, val map[string]interface{}) error {
 	tx := d.db.Model(v).Updates(val)
 	if tx.Error != nil {
-		return xerrors.Errorf("updating (map): %w", tx.Error)
+		return fmt.Errorf("updating (map): %w", tx.Error)
 	}
 
 	return nil
@@ -341,7 +340,7 @@ func (d *dao) UpdateWithMap(v interface{}, val map[string]interface{}) error {
 func (d *dao) Raw(v interface{}, query string, args ...interface{}) error {
 	tx := d.db.Raw(query, args...).Scan(v)
 	if tx.Error != nil {
-		return xerrors.Errorf("Raw data: %w", tx.Error)
+		return fmt.Errorf("Raw data: %w", tx.Error)
 	}
 
 	return nil
