@@ -54,6 +54,7 @@ type SQLDAO interface {
 	Upsert(v interface{}) error
 	Update(v interface{}) error
 	UpdateWithMap(v interface{}, val map[string]interface{}) error
+	UpdateWhere(v interface{}, val map[string]interface{}, query string, args ...interface{}) error
 
 	Raw(v interface{}, query string, args ...interface{}) error
 }
@@ -314,6 +315,15 @@ func (d *dao) Update(v interface{}) error {
 	tx := d.db.Model(v).Updates(v)
 	if tx.Error != nil {
 		return xerrors.Errorf("updating: %w", tx.Error)
+	}
+
+	return nil
+}
+
+func (d *dao) UpdateWhere(v interface{}, val map[string]interface{}, query string, args ...interface{}) error {
+	tx := d.db.Model(v).Where(query, args...).Updates(val)
+	if tx.Error != nil {
+		return xerrors.Errorf("updating where: %w", tx.Error)
 	}
 
 	return nil
