@@ -9,15 +9,8 @@ import (
 )
 
 const (
-	// SQLSearchByName -> search by name: name
-	SQLSearchByName = "lower(name) LIKE lower(?)"
 	// SQLSearchByNameAndCode -> search by name and code: name, code
 	SQLSearchByNameAndCode = "lower(name) LIKE lower(?) OR lower(code) LIKE lower(?)"
-	// SQLFilterByCompany -> filter By company id: CompanyID
-	SQLFilterByCompany = "company_id = ?"
-
-	// SQLSearchByGenericIDAndInstition -> search by name: name
-	SQLSearchByGenericIDAndInstition = "lower(name) LIKE lower(?) and company = ?"
 
 	listWithArgsMessage = "list with args: %w"
 
@@ -51,7 +44,9 @@ type SQLDAO interface {
 	DeleteWithArguments(v interface{}, args ...interface{}) error
 
 	Upsert(v interface{}) error
+
 	Update(v interface{}) error
+	UpdateFull(v interface{}) error
 	UpdateWithMap(v interface{}, val map[string]interface{}) error
 	UpdateWhere(v interface{}, val map[string]interface{}, query string, args ...interface{}) error
 
@@ -323,6 +318,15 @@ func (d *dao) UpdateWhere(v interface{}, val map[string]interface{}, query strin
 	tx := d.db.Model(v).Where(query, args...).Updates(val)
 	if tx.Error != nil {
 		return fmt.Errorf("updating where: %w", tx.Error)
+	}
+
+	return nil
+}
+
+func (d *dao) UpdateFull(v interface{}) error {
+	tx := d.db.Session(&gorm.Session{FullSaveAssociations: true}).Model(v).Updates(v)
+	if tx.Error != nil {
+		return fmt.Errorf("updating (full): %w", tx.Error)
 	}
 
 	return nil
