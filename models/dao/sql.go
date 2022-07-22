@@ -51,6 +51,9 @@ type SQLDAO interface {
 	UpdateWhere(v interface{}, val map[string]interface{}, query string, args ...interface{}) error
 
 	Raw(v interface{}, query string, args ...interface{}) error
+
+	AppendOnAssociation(v interface{}, association string, data interface{}) error
+	DeleteOnAssociation(v interface{}, association string, data interface{}) error
 }
 
 type ListParams struct {
@@ -345,6 +348,30 @@ func (d *dao) Raw(v interface{}, query string, args ...interface{}) error {
 	tx := d.db.Raw(query, args...).Scan(v)
 	if tx.Error != nil {
 		return fmt.Errorf("Raw data: %w", tx.Error)
+	}
+
+	return nil
+}
+
+// v interface{}: the model that has the association. Example.: &User{};
+// association string: the association name. Example.: "Languages";
+// data interface{}: the data to be associated. Example.: &Language{ Name };
+func (d *dao) AppendOnAssociation(v interface{}, association string, data interface{}) error {
+	err := d.db.Model(v).Association(association).Append(data)
+	if err != nil {
+		return fmt.Errorf("association: %w", err)
+	}
+
+	return nil
+}
+
+// v interface{}: the model that has the association. Example: &User{};
+// association string: the association name. Example: "Languages";
+// data interface{}: the associated data to be deleted. Example: &Language{ ID, Name };
+func (d *dao) DeleteOnAssociation(v interface{}, association string, data interface{}) error {
+	err := d.db.Model(v).Association(association).Delete(data)
+	if err != nil {
+		return fmt.Errorf("association: %w", err)
 	}
 
 	return nil
