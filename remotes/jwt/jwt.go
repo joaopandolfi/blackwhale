@@ -13,7 +13,7 @@ func NewJwtToken(t Token, expMinutes int, secret string) (string, error) {
 	atClaims["authorized"] = t.Authorized
 	atClaims["id"] = t.ID
 	atClaims["institution"] = t.Institution
-	atClaims["permissions"] = t.Permission
+	atClaims["permission"] = t.Permission
 	atClaims["broker"] = t.Broker
 	atClaims["exp"] = time.Now().Add(time.Minute * time.Duration(expMinutes)).Unix()
 
@@ -52,7 +52,7 @@ func CheckJwtToken(tokenString, secret string) (Token, error) {
 		Authorized:  true,
 		ID:          token["id"].(string),
 		Institution: token["institution"].(string),
-		Permission:  token["permissions"].(string),
+		Permission:  token["permission"].(string),
 		Broker:      token["broker"].(map[string]interface{}),
 	}, nil
 }
