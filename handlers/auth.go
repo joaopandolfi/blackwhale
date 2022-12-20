@@ -26,7 +26,7 @@ func TokenHandler(next http.HandlerFunc) http.HandlerFunc {
 		t, err := utils.CheckJwtToken(token)
 
 		if !t.Authorized || err != nil {
-			utils.Debug("[TokenHandler]", "Auth Error", url)
+			utils.Debug("[TokenHandler]", "Auth Error", url, err.Error())
 			Response(w, invalidPermissionMessage, http.StatusForbidden)
 			return
 		}
