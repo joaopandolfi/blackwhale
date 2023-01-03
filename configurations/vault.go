@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"fmt"
-
 	"github.com/joaopandolfi/blackwhale/remotes/request"
 )
 
