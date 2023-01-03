@@ -4,8 +4,9 @@ import (
 	"sync"
 	"time"
 
+	"fmt"
+
 	"github.com/joaopandolfi/blackwhale/utils"
-	"golang.org/x/xerrors"
 )
 
 var mcache *memCache
@@ -34,7 +35,7 @@ func initializeMemory(tick time.Duration) Cache {
 
 func (c *memCache) Put(key string, data interface{}, duration time.Duration) error {
 	if len(c.buff) > MAX_BUFF_SIZE {
-		return xerrors.Errorf("buffer overflow")
+		return fmt.Errorf("buffer overflow")
 	}
 
 	c.buff[key] = stored{

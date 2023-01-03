@@ -3,9 +3,10 @@ package rabbitmq
 import (
 	"encoding/json"
 
+	"fmt"
+
 	c "github.com/joaopandolfi/blackwhale/configurations"
 	"github.com/streadway/amqp"
-	"golang.org/x/xerrors"
 )
 
 // Driver for RabbitMQ
@@ -21,12 +22,12 @@ var chanel *amqp.Channel
 func open() (*amqp.Connection, *amqp.Channel, error) {
 	c, err := amqp.Dial(c.Configuration.RabbitMQURL)
 	if err != nil {
-		return nil, nil, xerrors.Errorf("connecting to rabbitmq:: %w", err)
+		return nil, nil, fmt.Errorf("connecting to rabbitmq:: %w", err)
 	}
 
 	ch, err := c.Channel()
 	if err != nil {
-		return nil, nil, xerrors.Errorf("opening a channel: %w", err)
+		return nil, nil, fmt.Errorf("opening a channel: %w", err)
 	}
 
 	return c, ch, nil
@@ -45,7 +46,7 @@ func New() (*Driver, error) {
 	if conn == nil {
 		c, ch, err := open()
 		if err != nil {
-			return nil, xerrors.Errorf("creating rabbit mq driver: %w", err)
+			return nil, fmt.Errorf("creating rabbit mq driver: %w", err)
 		}
 		conn = c
 		chanel = ch
@@ -57,7 +58,7 @@ func New() (*Driver, error) {
 func Fresh() (*Driver, error) {
 	c, ch, err := open()
 	if err != nil {
-		return nil, xerrors.Errorf("creating fresh rabbit mq driver: %w", err)
+		return nil, fmt.Errorf("creating fresh rabbit mq driver: %w", err)
 	}
 	return new(c, ch), nil
 }
@@ -73,7 +74,7 @@ func (d *Driver) OpenQueue(tube string) error {
 			nil,   // arguments
 		)
 		if err != nil {
-			return xerrors.Errorf("declaring tube: %w", err)
+			return fmt.Errorf("declaring tube: %w", err)
 		}
 		d.Queues[tube] = &q
 	}
@@ -84,7 +85,7 @@ func (d *Driver) OpenQueue(tube string) error {
 func (d *Driver) PutDefault(tube string, body interface{}) error {
 	b, err := json.Marshal(&body)
 	if err != nil {
-		return xerrors.Errorf("marshaling body: %w", err)
+		return fmt.Errorf("marshaling body: %w", err)
 	}
 	err = d.Channel.Publish(
 		"",    // exchange
@@ -98,7 +99,7 @@ func (d *Driver) PutDefault(tube string, body interface{}) error {
 	)
 
 	if err != nil {
-		return xerrors.Errorf("publishing on channel: %w", err)
+		return fmt.Errorf("publishing on channel: %w", err)
 	}
 
 	return nil
@@ -133,13 +134,13 @@ func shutdown(c *amqp.Connection, ch *amqp.Channel) error {
 	if c != nil {
 		err := c.Close()
 		if err != nil {
-			return xerrors.Errorf("closing connection: %w", err)
+			return fmt.Errorf("closing connection: %w", err)
 		}
 	}
 	if ch != nil {
 		err := ch.Close()
 		if err != nil {
-			return xerrors.Errorf("closing channel: %w", err)
+			return fmt.Errorf("closing channel: %w", err)
 		}
 	}
 	return nil

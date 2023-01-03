@@ -1,9 +1,10 @@
 package sanitizable
 
 import (
+	"fmt"
+
 	config "github.com/joaopandolfi/blackwhale/configurations"
 	"github.com/joaopandolfi/blackwhale/utils/aes"
-	"golang.org/x/xerrors"
 )
 
 // Sanitilizable - public struct to implement sanitization by criptography
@@ -19,7 +20,7 @@ func (m *Sanitilizable) Sanitize(vals map[string]*string) error {
 	for key, val := range vals {
 		encVal, err := aes.Encrypt(config.Configuration.Security.AESKEY, *val)
 		if err != nil {
-			return xerrors.Errorf("encrypting %s: %v", key, err)
+			return fmt.Errorf("encrypting %s: %v", key, err)
 		}
 		*vals[key] = encVal
 	}
@@ -35,7 +36,7 @@ func (m *Sanitilizable) Restore(vals map[string]*string) error {
 	for key, val := range vals {
 		encVal, err := aes.Decrypt(config.Configuration.Security.AESKEY, *val)
 		if err != nil {
-			return xerrors.Errorf("restoring %s: %v", key, err)
+			return fmt.Errorf("restoring %s: %v", key, err)
 		}
 		*vals[key] = encVal
 	}

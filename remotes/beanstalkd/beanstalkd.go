@@ -2,11 +2,11 @@ package beanstalkd
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	c "github.com/joaopandolfi/blackwhale/configurations"
 	"github.com/kr/beanstalk"
-	"golang.org/x/xerrors"
 )
 
 // Driver -
@@ -33,7 +33,7 @@ func New() (*Driver, error) {
 	if conn == nil {
 		c, err := beanstalk.Dial("tcp", c.Configuration.BeanstalkdUrl)
 		if err != nil {
-			return nil, xerrors.Errorf("connecting on beanstalkd: %w", err)
+			return nil, fmt.Errorf("connecting on beanstalkd: %w", err)
 		}
 		conn = c
 	}
@@ -49,7 +49,7 @@ func Fresh() (*Driver, error) {
 
 	c, err := beanstalk.Dial("tcp", c.Configuration.BeanstalkdUrl)
 	if err != nil {
-		return nil, xerrors.Errorf("connecting on beanstalkd: %w", err)
+		return nil, fmt.Errorf("connecting on beanstalkd: %w", err)
 	}
 	return &Driver{
 		Conn:        c,
@@ -75,7 +75,7 @@ func (d *Driver) DeleteMessage(tube string, id uint64) error {
 	t := d.getDataTube(tube)
 	err := t.Conn.Delete(id)
 	if err != nil {
-		return xerrors.Errorf("deleting message on tube (%v): %w", id, err)
+		return fmt.Errorf("deleting message on tube (%v): %w", id, err)
 	}
 	return nil
 }
@@ -84,7 +84,7 @@ func (d *Driver) ReleaseMessage(tube string, id uint64) error {
 	t := d.getDataTube(tube)
 	err := t.Conn.Release(id, PRIORITY_NORMAL, 0)
 	if err != nil {
-		return xerrors.Errorf("releasing message on tube [%v][%v]: %w", tube, id, err)
+		return fmt.Errorf("releasing message on tube [%v][%v]: %w", tube, id, err)
 	}
 	return nil
 }
@@ -94,7 +94,7 @@ func (d *Driver) BuryMessage(tube string, id uint64, priority uint32) error {
 	t := d.getDataTube(tube)
 	err := t.Conn.Bury(id, priority)
 	if err != nil {
-		return xerrors.Errorf("burying message on tube [%v][%v]: %w", tube, id, err)
+		return fmt.Errorf("burying message on tube [%v][%v]: %w", tube, id, err)
 	}
 	return nil
 }
@@ -104,7 +104,7 @@ func (d *Driver) RenewDuration(tube string, id uint64) error {
 	t := d.getDataTube(tube)
 	err := t.Conn.Touch(id)
 	if err != nil {
-		return xerrors.Errorf("renewing message duration on tube (%v): %w", id, err)
+		return fmt.Errorf("renewing message duration on tube (%v): %w", id, err)
 	}
 	return nil
 }
@@ -133,7 +133,7 @@ func TubeSet(conn *beanstalk.Conn, tube string) *beanstalk.TubeSet {
 func Put(tube *beanstalk.Tube, priority uint32, delay, ttr time.Duration, body interface{}) (uint64, error) {
 	bbody, err := json.Marshal(body)
 	if err != nil {
-		return 0, xerrors.Errorf("marshaling body to put on tube (%s): %w", tube.Name, err)
+		return 0, fmt.Errorf("marshaling body to put on tube (%s): %w", tube.Name, err)
 	}
 	return tube.Put(bbody, priority, 0, ttr)
 }

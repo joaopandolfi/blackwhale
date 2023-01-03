@@ -8,8 +8,9 @@ import (
 	"net/http"
 	"time"
 
+	"fmt"
+
 	"github.com/pkg/errors"
-	"golang.org/x/xerrors"
 )
 
 var transport *http.Transport
@@ -61,7 +62,7 @@ func RequestWithHeader(method, url string, head map[string]string, data []byte) 
 
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 	if err != nil {
-		return nil, 0, xerrors.Errorf("making requester: %w", err)
+		return nil, 0, fmt.Errorf("making requester: %w", err)
 	}
 
 	//Setting Headers
@@ -75,7 +76,7 @@ func RequestWithHeader(method, url string, head map[string]string, data []byte) 
 		if resp != nil {
 			statusCode = resp.StatusCode
 		}
-		return nil, statusCode, xerrors.Errorf("[RequestWithHeader] - Error on make %s request, URL: %s, DATA: %s , ERROR: %w", method, url, string(data), err)
+		return nil, statusCode, fmt.Errorf("[RequestWithHeader] - Error on make %s request, URL: %s, DATA: %s , ERROR: %w", method, url, string(data), err)
 	}
 
 	defer resp.Body.Close()
@@ -83,7 +84,7 @@ func RequestWithHeader(method, url string, head map[string]string, data []byte) 
 	b, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		return b, resp.StatusCode, xerrors.Errorf("[RequestWithHeader] - Error on Read Body result, URL: %s, DATA: %s , ERROR: %w", url, string(data), err)
+		return b, resp.StatusCode, fmt.Errorf("[RequestWithHeader] - Error on Read Body result, URL: %s, DATA: %s , ERROR: %w", url, string(data), err)
 	}
 
 	return b, resp.StatusCode, err
@@ -113,7 +114,7 @@ func Post(url string, data []byte) (body []byte, err error) {
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 	if err != nil {
-		return nil, xerrors.Errorf("making requester: %w", err)
+		return nil, fmt.Errorf("making requester: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -150,7 +151,7 @@ func GetWithHeader(url string, head map[string]string) (body []byte, err error) 
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, xerrors.Errorf("making requester: %w", err)
+		return nil, fmt.Errorf("making requester: %w", err)
 	}
 
 	//Setting Headers
