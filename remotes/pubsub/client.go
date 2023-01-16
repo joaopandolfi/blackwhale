@@ -10,6 +10,11 @@ import (
 	ps "cloud.google.com/go/pubsub"
 )
 
+type DriverContract interface {
+	Push(topicName string, data []byte) (string, error)
+	Subscribe(channel string, ch chan *Message) error
+}
+
 type Driver struct {
 	Client        *ps.Client
 	Ctx           context.Context
@@ -39,7 +44,7 @@ func Init(c context.Context, projectID string) error {
 	return nil
 }
 
-func Get() *Driver {
+func Get() DriverContract {
 	if client == nil {
 		panic("PubSub client driver not initialized")
 	}
