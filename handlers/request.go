@@ -114,6 +114,11 @@ func RESTResponseError(w http.ResponseWriter, resp interface{}) {
 	restResponseError(w, string(b))
 }
 
+// RESTResponseErrorData - Make REST API default response and put inside a data key
+func RESTResponseErrorData(w http.ResponseWriter, resp interface{}) {
+	Response(w, map[string]interface{}{"success": false, "data": resp}, http.StatusOK)
+}
+
 // Redirect - Redirect page
 func Redirect(r *http.Request, w http.ResponseWriter, url string) {
 	http.Redirect(w, r, url, http.StatusSeeOther)
