@@ -25,7 +25,7 @@ You need setup those envs
 
 ## Start tracing from http context
 ```GoLang
-    span := jaeger.StartSpanFromRequest(tracer, r)
+    newCtx, span := jaeger.StartSpanFromRequest(tracer, r)
     defer span.Finish()
 ```
 

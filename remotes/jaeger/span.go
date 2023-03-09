@@ -10,9 +10,11 @@ import (
 
 // StartSpanFromRequest extracts the parent span context from the inbound HTTP request
 // and starts a new child span if there is a parent span.
-func StartSpanFromRequest(tracer opentracing.Tracer, r *http.Request, name string) opentracing.Span {
+func StartSpanFromRequest(tracer opentracing.Tracer, r *http.Request, name string) (context.Context, opentracing.Span) {
 	spanCtx, _ := Extract(tracer, r)
-	return tracer.StartSpan(name, ext.RPCServerOption(spanCtx))
+	newSpan := tracer.StartSpan(name, ext.RPCServerOption(spanCtx))
+	newCtx := opentracing.ContextWithSpan(r.Context(), newSpan)
+	return newCtx, newSpan
 }
 
 // SpanTrace creates a tracing and returns the new context and finisher
