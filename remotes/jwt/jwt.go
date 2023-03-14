@@ -48,12 +48,17 @@ func CheckJwtToken(tokenString, secret string) (Token, error) {
 		return Token{Authorized: false}, err
 	}
 
+	broker := map[string]interface{}{}
+	if b, ok := token["broker"].(map[string]interface{}); ok {
+		broker = b
+	}
+
 	return Token{
 		Authorized:  true,
 		ID:          token["id"].(string),
 		Institution: token["institution"].(string),
 		Permission:  token["permission"].(string),
-		Broker:      token["broker"].(map[string]interface{}),
+		Broker:      broker,
 	}, nil
 }
 

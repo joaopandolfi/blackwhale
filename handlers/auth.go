@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/joaopandolfi/blackwhale/configurations"
 	"github.com/joaopandolfi/blackwhale/models/auth"
+	"github.com/joaopandolfi/blackwhale/remotes/jwt"
 	"github.com/joaopandolfi/blackwhale/utils"
 )
 
@@ -12,6 +15,7 @@ const (
 	HEADER_USERID      = "_xid"
 	HEADER_INSTITUTION = "_xinstitution"
 	HEADER_PERMISSION  = "_xpermission"
+	HEADER_BROKER      = "_xbroker"
 
 	invalidPermissionMessage = "Not authorized"
 )
@@ -23,12 +27,17 @@ func TokenHandler(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		url := r.URL.String()
 		token := GetHeader(r, "token")
-		t, err := utils.CheckJwtToken(token)
+		t, err := jwt.CheckJwtToken(token, configurations.Configuration.Security.JWTSecret)
 
 		if !t.Authorized || err != nil {
 			utils.Debug("[TokenHandler]", "Auth Error", url, err.Error())
 			Response(w, invalidPermissionMessage, http.StatusForbidden)
 			return
+		}
+
+		broker, err := json.Marshal(t.Broker)
+		if err == nil {
+			InjectHeader(r, HEADER_BROKER, string(broker))
 		}
 
 		InjectHeader(r, HEADER_PERMISSION, t.Permission)
