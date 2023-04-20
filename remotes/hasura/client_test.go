@@ -1,6 +1,7 @@
 package hasura_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/joaopandolfi/blackwhale/remotes/hasura"
@@ -22,7 +23,7 @@ func TestQuery(t *testing.T) {
 		}
 	`
 
-	result, err := h.Query(query, nil)
+	result, err := h.Query(context.Background(), query, nil)
 	if err != nil {
 		t.Errorf("error %s", err.Error())
 	}

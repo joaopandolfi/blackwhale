@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/joaopandolfi/blackwhale/remotes/jaeger"
 	"github.com/machinebox/graphql"
 )
 
 // Connect with an Hasura GraphQL API
 type HasuraClient interface {
-	Query(query string, vars *Variables) (*QueryResult, error)
-	Mutate(mutation string, vars *Variables) (*QueryResult, error)
+	Query(ctx context.Context, query string, vars *Variables) (*QueryResult, error)
+	Mutate(ctx context.Context, mutation string, vars *Variables) (*QueryResult, error)
 }
 
 type HasuraClientConfig struct {
@@ -39,13 +40,24 @@ func NewHasuraClientTo(config *HasuraClientConfig) HasuraClient {
 	}
 }
 
+func (h *hasura) tags(method, query string) map[string]interface{} {
+	return map[string]interface{}{
+		"method": method,
+		"query":  query,
+	}
+}
+
 // Perform queries, to retrieve data from database.
-func (h *hasura) Query(query string, vars *Variables) (*QueryResult, error) {
+func (h *hasura) Query(ctx context.Context, query string, vars *Variables) (*QueryResult, error) {
+	_, span := jaeger.SpanTrace(ctx, "hasura.query", h.tags("query", query))
+	defer span.Finish()
 	return h.run(query, vars)
 }
 
 // Perform mutations to change database state.
-func (h *hasura) Mutate(mutation string, vars *Variables) (*QueryResult, error) {
+func (h *hasura) Mutate(ctx context.Context, mutation string, vars *Variables) (*QueryResult, error) {
+	_, span := jaeger.SpanTrace(ctx, "hasura.mutation", h.tags("query", mutation))
+	defer span.Finish()
 	return h.run(mutation, vars)
 }
 
