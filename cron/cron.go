@@ -3,16 +3,20 @@ package cron
 import (
 	"fmt"
 	"sync"
+
 	"time"
 
 	"github.com/joaopandolfi/blackwhale/utils"
 )
 
+const EphemeralJobDefaultDelay = time.Millisecond * 10
+
 type work struct {
-	job    Job
-	tick   time.Duration
-	active bool
-	stop   chan bool
+	job       Job
+	tick      time.Duration
+	active    bool
+	ephemeral bool
+	stop      chan bool
 }
 
 type cron struct {
@@ -35,7 +39,7 @@ func Get() CRON {
 	return cr
 }
 
-func (c *cron) AddJob(key string, tick time.Duration, job Job) error {
+func (c *cron) addJob(key string, tick time.Duration, ephemeral bool, job Job) error {
 	c.init()
 
 	if c.jobs[key] != nil {
@@ -43,13 +47,22 @@ func (c *cron) AddJob(key string, tick time.Duration, job Job) error {
 	}
 
 	c.jobs[key] = &work{
-		job:    job,
-		tick:   tick,
-		active: true,
-		stop:   make(chan bool),
+		job:       job,
+		tick:      tick,
+		active:    true,
+		ephemeral: ephemeral,
+		stop:      make(chan bool),
 	}
 
 	return nil
+}
+
+func (c *cron) AddJob(key string, tick time.Duration, job Job) error {
+	return c.addJob(key, tick, false, job)
+}
+
+func (c *cron) AddEphemeralJob(key string, tick time.Duration, job Job) error {
+	return c.addJob(key, tick, true, job)
 }
 
 func (c *cron) RemoveJob(key string) error {
@@ -85,7 +98,7 @@ func (c *cron) Start() {
 	c.errCh = make(chan error, len(c.jobs))
 
 	for k, j := range c.jobs {
-		go c.worker(k, j.stop, j.tick, j.job)
+		go c.worker(k, j.stop, j.tick, j.ephemeral, j.job)
 	}
 
 	go c.errorHandler()
@@ -102,30 +115,39 @@ func (c *cron) errorHandler() {
 	for {
 		select {
 		case <-c.stopCh:
-			utils.Info("[CRON][Stop] handler", "error")
+			utils.Info("[CRON][Stop] Error Handler", "success")
 			c.stopPropagate()
 			return
 		case err := <-c.errCh:
-			fmt.Println("[CROTN][Error Handler] Error: %w", err)
+			utils.Error("[CRON][Error Handler] Error:", err.Error())
 		}
 	}
 }
 
-func (c *cron) worker(key string, stop chan bool, tick time.Duration, job Job) {
+func (c *cron) worker(key string, stop chan bool, tick time.Duration, ephemeral bool, job Job) {
 	c.workerStarted()
 	ticker := time.NewTicker(tick)
 
+	if ephemeral {
+		time.Sleep(tick)
+		ticker.Stop()
+	}
 	utils.Info("[CRON][Start] job", key, tick/time.Second, "seconds")
 
 	for {
 		select {
 		case <-c.stopCh:
 			utils.Info("[CRON][Stop] job", key)
+			job.Stop()
+			utils.Info("[CRON][Stopped] job", key)
 			c.stopPropagate()
+			ticker.Stop()
 			return
 		case <-stop:
 			utils.Info("[CRON][Stop] only job", key)
+			job.Stop()
 			c.workerStopped(key)
+			ticker.Stop()
 			return
 		case <-ticker.C:
 			if job.Trigger() {
