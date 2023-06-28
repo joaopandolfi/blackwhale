@@ -84,7 +84,7 @@ func QuietMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		ctx = context.WithValue(ctx, quietCtx, true)
-		*r = *r.WithContext(ctx)
+		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r)
 	})
 }
