@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -18,6 +19,7 @@ const (
 	HEADER_BROKER      = "_xbroker"
 
 	invalidPermissionMessage = "Not authorized"
+	quietCtx                 = "quiet"
 )
 
 // TokenHandler -
@@ -44,7 +46,12 @@ func TokenHandler(next http.HandlerFunc) http.HandlerFunc {
 		InjectHeader(r, HEADER_INSTITUTION, t.Institution)
 		InjectHeader(r, HEADER_USERID, t.ID)
 
-		utils.Debug("[TokenHandler]", "Authenticated", url)
+		ctx := r.Context()
+		quiet := ctx.Value(quietCtx)
+		if quiet == nil {
+			utils.Debug("[TokenHandler]", "Authenticated", url)
+		}
+
 		next.ServeHTTP(w, r)
 	})
 }
@@ -70,8 +77,26 @@ func PermissionMiddleware(expectedPermissions []string) Middleware {
 	}
 }
 
+// QuietMiddleware -
+// @middleware
+// Intercept the request and add quiet flag
+func QuietMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, quietCtx, true)
+		*r = *r.WithContext(ctx)
+		next.ServeHTTP(w, r)
+	})
+}
+
 // HandlerTokenPermissions -
 // check if the request contain the permissions
 func HandleTokenPermissions(r *mux.Router, path string, f http.HandlerFunc, permissions []string, methods ...string) {
 	r.HandleFunc(path, Chain(f, PermissionMiddleware(permissions), TokenHandler)).Methods(methods...)
+}
+
+// QuietHandlerTokenPermissions -
+// Same as HandlerTokenPermissions but without log url
+func QuietHandleTokenPermissions(r *mux.Router, path string, f http.HandlerFunc, permissions []string, methods ...string) {
+	r.HandleFunc(path, Chain(f, PermissionMiddleware(permissions), QuietMiddleware, TokenHandler)).Methods(methods...)
 }
