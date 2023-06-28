@@ -30,6 +30,7 @@ func Run(
 	interval time.Duration,
 	input chan interface{},
 	callback func(payload interface{}),
+	logMsg_optional ...string,
 ) {
 	// skip execution if debounce is already running for given id
 	if active, ok := debounces.Load(id); ok && active.(bool) {
@@ -37,6 +38,8 @@ func Run(
 	}
 
 	setupDebounce(id)
+
+	silent := len(logMsg_optional) == 0
 
 	var payload interface{}
 	timer := time.NewTimer(interval)
@@ -47,15 +50,17 @@ func Run(
 			increaseCounter(id)
 		case <-timer.C:
 			go callback(payload)
-			log(id)
+			if !silent {
+				log(id, logMsg_optional[0])
+			}
 			clear(id)
 			return
 		}
 	}
 }
 
-func log(id string) {
-	utils.Debug("[Debounce] - Buffered calls", counter[id])
+func log(id, logMsg_optional string) {
+	utils.Debug("[Debounce] - Buffered calls", counter[id], logMsg_optional)
 }
 
 func setupDebounce(id string) {
