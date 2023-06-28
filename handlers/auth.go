@@ -98,5 +98,5 @@ func HandleTokenPermissions(r *mux.Router, path string, f http.HandlerFunc, perm
 // QuietHandlerTokenPermissions -
 // Same as HandlerTokenPermissions but without log url
 func QuietHandleTokenPermissions(r *mux.Router, path string, f http.HandlerFunc, permissions []string, methods ...string) {
-	r.HandleFunc(path, Chain(f, PermissionMiddleware(permissions), QuietMiddleware, TokenHandler)).Methods(methods...)
+	r.HandleFunc(path, Chain(f, PermissionMiddleware(permissions), TokenHandler, QuietMiddleware)).Methods(methods...)
 }
