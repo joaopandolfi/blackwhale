@@ -44,7 +44,11 @@ func Init(c context.Context, projectID string) error {
 	return nil
 }
 
-func Get() DriverContract {
+func GetContract() DriverContract {
+	return Get()
+}
+
+func Get() *Driver {
 	if client == nil {
 		panic("PubSub client driver not initialized")
 	}
