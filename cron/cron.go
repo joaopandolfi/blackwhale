@@ -16,6 +16,7 @@ type work struct {
 	tick      time.Duration
 	active    bool
 	ephemeral bool
+	hotStart  bool
 	stop      chan bool
 }
 
@@ -39,7 +40,7 @@ func Get() CRON {
 	return cr
 }
 
-func (c *cron) addJob(key string, tick time.Duration, ephemeral bool, job Job) error {
+func (c *cron) addJob(key string, tick time.Duration, ephemeral, hotStart bool, job Job) error {
 	c.init()
 
 	if c.jobs[key] != nil {
@@ -50,6 +51,7 @@ func (c *cron) addJob(key string, tick time.Duration, ephemeral bool, job Job) e
 		job:       job,
 		tick:      tick,
 		active:    true,
+		hotStart:  hotStart,
 		ephemeral: ephemeral,
 		stop:      make(chan bool),
 	}
@@ -58,11 +60,15 @@ func (c *cron) addJob(key string, tick time.Duration, ephemeral bool, job Job) e
 }
 
 func (c *cron) AddJob(key string, tick time.Duration, job Job) error {
-	return c.addJob(key, tick, false, job)
+	return c.addJob(key, tick, false, false, job)
+}
+
+func (c *cron) AddHotStartJob(key string, tick time.Duration, job Job) error {
+	return c.addJob(key, tick, false, true, job)
 }
 
 func (c *cron) AddEphemeralJob(key string, tick time.Duration, job Job) error {
-	return c.addJob(key, tick, true, job)
+	return c.addJob(key, tick, true, false, job)
 }
 
 func (c *cron) RemoveJob(key string) error {
@@ -98,7 +104,7 @@ func (c *cron) Start() {
 	c.errCh = make(chan error, len(c.jobs))
 
 	for k, j := range c.jobs {
-		go c.worker(k, j.stop, j.tick, j.ephemeral, j.job)
+		go c.worker(k, j.stop, j.tick, j.ephemeral, j.hotStart, j.job)
 	}
 
 	go c.errorHandler()
@@ -124,14 +130,23 @@ func (c *cron) errorHandler() {
 	}
 }
 
-func (c *cron) worker(key string, stop chan bool, tick time.Duration, ephemeral bool, job Job) {
+func (c *cron) worker(key string, stop chan bool, tick time.Duration, ephemeral, hotStart bool, job Job) {
 	c.workerStarted()
 	ticker := time.NewTicker(tick)
+	defer ticker.Stop()
+
+	eval := make(chan time.Time, 1)
 
 	if ephemeral {
 		time.Sleep(tick)
 		ticker.Stop()
 	}
+
+	if hotStart {
+		utils.Info("[CRON][Tick] Hot starting job", key)
+		eval <- time.Now()
+	}
+
 	utils.Info("[CRON][Start] job", key, tick/time.Second, "seconds")
 
 	for {
@@ -149,7 +164,9 @@ func (c *cron) worker(key string, stop chan bool, tick time.Duration, ephemeral 
 			c.workerStopped(key)
 			ticker.Stop()
 			return
-		case <-ticker.C:
+		case t := <-ticker.C:
+			eval <- t
+		case <-eval:
 			if job.Trigger() {
 				err := job.Eval()
 				if err != nil {

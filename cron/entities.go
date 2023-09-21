@@ -15,6 +15,8 @@ type CRON interface {
 	AddJob(key string, tick time.Duration, job Job) error
 	// AddEphemeralJob - Add a job who will run once after a given time
 	AddEphemeralJob(key string, tick time.Duration, job Job) error
+	// AddHotStartJob - Add a job who will run in the moment was started and again after a tick time
+	AddHotStartJob(key string, tick time.Duration, job Job) error
 	RemoveJob(key string) error
 	StopJob(key string) error
 	GracefullShutdown() error
