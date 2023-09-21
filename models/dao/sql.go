@@ -28,11 +28,16 @@ const (
 type SQLDAO interface {
 	New(v interface{}) error
 
+	// Expose gorm instance
+	DB() (*gorm.DB, error)
+
 	Get(id int, v interface{}) error
 	GetNested(id int, v interface{}, nesteds []string) error
 	GetWithArguments(id int, v interface{}, query string, args ...interface{}) error
 	GetGeneric(v interface{}, nested []string, query string, args ...interface{}) error
 	GetDeletedWithArguments(id int, v interface{}, query string, args ...interface{}) error
+
+	Last(v interface{}, args ...interface{}) error
 
 	List(v interface{}, limit int) error
 	ListConditional(v interface{}, params ListParams, query string, args ...interface{}) error
@@ -109,7 +114,7 @@ func GenerateQuery(params map[string]interface{}) (string, []interface{}) {
 	return query, data
 }
 
-//NewDao generic
+// NewDao generic
 func Sql(db *gorm.DB) SQLDAO {
 	if db == nil {
 		panic("Database can't be null")
@@ -146,6 +151,14 @@ func (d *dao) processNested(tx *gorm.DB, nested []string) *gorm.DB {
 		}
 	}
 	return tx
+}
+
+func (d *dao) Last(v interface{}, args ...interface{}) error {
+	tx := d.db.Preload(clause.Associations).Last(v, args)
+	if tx.Error != nil {
+		return fmt.Errorf("last: %w", tx.Error)
+	}
+	return nil
 }
 
 func (d *dao) Get(id int, v interface{}) error {
@@ -351,6 +364,14 @@ func (d *dao) Raw(v interface{}, query string, args ...interface{}) error {
 	}
 
 	return nil
+}
+
+func (d *dao) DB() (*gorm.DB, error) {
+	if d.db == nil {
+		return nil, fmt.Errorf("database is not itialized")
+	}
+
+	return d.db, nil
 }
 
 // v interface{}: the model that has the association. Example.: &User{};
