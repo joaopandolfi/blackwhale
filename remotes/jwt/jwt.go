@@ -64,6 +64,9 @@ func CheckJwtToken(tokenString, secret string) (Token, error) {
 
 func CheckJwtGenericToken(tokenString, secret string) (map[string]interface{}, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if token.Method.Alg() != jwt.SigningMethodHS256.Alg() {
+			return nil, fmt.Errorf("invalid signing method hash: %v", token.Signature)
+		}
 		return []byte(secret), nil
 	})
 	if err != nil {
