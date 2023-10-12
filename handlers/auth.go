@@ -7,7 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/joaopandolfi/blackwhale/configurations"
-	"github.com/joaopandolfi/blackwhale/models/auth"
+	auth "github.com/joaopandolfi/blackwhale/models/permissions"
 	"github.com/joaopandolfi/blackwhale/remotes/jwt"
 	"github.com/joaopandolfi/blackwhale/utils"
 )
