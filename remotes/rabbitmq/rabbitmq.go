@@ -19,8 +19,8 @@ type Driver struct {
 var conn *amqp.Connection
 var chanel *amqp.Channel
 
-func open() (*amqp.Connection, *amqp.Channel, error) {
-	c, err := amqp.Dial(c.Configuration.RabbitMQURL)
+func open(connectionUrl string) (*amqp.Connection, *amqp.Channel, error) {
+	c, err := amqp.Dial(connectionUrl)
 	if err != nil {
 		return nil, nil, fmt.Errorf("connecting to rabbitmq:: %w", err)
 	}
@@ -42,9 +42,13 @@ func new(c *amqp.Connection, ch *amqp.Channel) *Driver {
 }
 
 // New rabbitmq driver singleton
-func New() (*Driver, error) {
+func New(connectionUrl ...string) (*Driver, error) {
+	url := c.Configuration.RabbitMQURL
+	if len(connectionUrl) > 0 {
+		url = connectionUrl[0]
+	}
 	if conn == nil {
-		c, ch, err := open()
+		c, ch, err := open(url)
 		if err != nil {
 			return nil, fmt.Errorf("creating rabbit mq driver: %w", err)
 		}
@@ -55,8 +59,12 @@ func New() (*Driver, error) {
 }
 
 // Fresh return a new fresh and clean connection
-func Fresh() (*Driver, error) {
-	c, ch, err := open()
+func Fresh(connectionUrl ...string) (*Driver, error) {
+	url := c.Configuration.RabbitMQURL
+	if len(connectionUrl) > 0 {
+		url = connectionUrl[0]
+	}
+	c, ch, err := open(url)
 	if err != nil {
 		return nil, fmt.Errorf("creating fresh rabbit mq driver: %w", err)
 	}
