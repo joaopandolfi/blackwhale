@@ -5,8 +5,7 @@ import (
 	"testing"
 
 	"github.com/joaopandolfi/blackwhale/remotes/hasura"
-
-	"github.com/stretchr/testify/assert"
+	"github.com/tj/assert"
 )
 
 func TestQuery(t *testing.T) {
