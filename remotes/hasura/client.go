@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/joaopandolfi/graphql"
+
 	"github.com/joaopandolfi/blackwhale/remotes/jaeger"
-	"github.com/machinebox/graphql"
 )
 
 // Connect with an Hasura GraphQL API
@@ -35,7 +36,7 @@ func NewHasuraClient(GraphQLServerURL, SystemToken string) HasuraClient {
 // Creates an HasuraClient with provided config.
 func NewHasuraClientTo(config *HasuraClientConfig) HasuraClient {
 	return &hasura{
-		client:      *graphql.NewClient(config.Url),
+		client:      *graphql.NewClient(config.Url, graphql.UseGzip()),
 		systemToken: config.SystemToken,
 	}
 }
