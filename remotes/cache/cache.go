@@ -1,8 +1,14 @@
 package cache
 
-import "time"
+import (
+	"time"
+
+	"github.com/joaopandolfi/blackwhale/configurations"
+)
 
 const MAX_BUFF_SIZE = 150
+
+var cacheInstance Cache
 
 type Cache interface {
 	Put(key string, data interface{}, duration time.Duration) error
@@ -14,5 +20,17 @@ type Cache interface {
 }
 
 func Initialize(tick time.Duration) Cache {
-	return initializeMemory(tick)
+	if configurations.Configuration.Redis.Use {
+		cacheInstance = GetRedis()
+	} else {
+		cacheInstance = initializeMemory(tick)
+	}
+	return cacheInstance
+}
+
+func Get() Cache {
+	if cacheInstance == nil {
+		panic("cache not initialized")
+	}
+	return cacheInstance
 }

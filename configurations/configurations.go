@@ -33,6 +33,13 @@ type Timeout struct {
 	Read  time.Duration
 }
 
+type Redis struct {
+	Use      bool
+	Server   string
+	Password string
+	DB       int
+}
+
 type Opsec struct {
 	Options       secure.Options
 	Debug         bool
@@ -69,6 +76,8 @@ type Configurations struct {
 
 	Session  SessionConfiguration
 	Security Opsec
+
+	Redis Redis
 
 	WhiteListAuthRoutes WhiteListAuthRoutes
 	Templates           map[string]*pongo2.Template
@@ -124,6 +133,9 @@ func LoadFromMap(fconf map[string]string) Configurations {
 	mongoPool, _ := strconv.Atoi(fconf["MONGO_POOL"])
 	timeout, _ := strconv.Atoi(fconf["SERVER_TIMEOUT"])
 	bcryptCost, _ := strconv.Atoi(fconf["BCRYPT_COST"])
+
+	useRedis, _ := strconv.ParseBool(fconf["REDIS_USE"])
+	dbRedis, _ := strconv.Atoi(fconf["REDIS_DB"])
 
 	return Configurations{
 		Name: fconf["SERVER_NAME"],
@@ -187,6 +199,13 @@ func LoadFromMap(fconf map[string]string) Configurations {
 			AESKEY:        fconf["AES_KEY"],
 			TokenValidity: tkVal,
 			DefaultPwd:    fconf["SERVER_DEFAULT_PASSWORD"],
+		},
+
+		Redis: Redis{
+			Use:      useRedis,
+			Server:   fconf["REDIS_SERVER"],
+			Password: fconf["REDIS_PASSWORD"],
+			DB:       dbRedis,
 		},
 
 		Templates: make(map[string]*pongo2.Template),
@@ -272,6 +291,10 @@ func Load() {
 			JWTSecret:     "",
 			AESKEY:        "-weak key :( -",
 			TokenValidity: 60,
+		},
+
+		Redis: Redis{
+			Use: false,
 		},
 
 		Templates: make(map[string]*pongo2.Template),
