@@ -12,7 +12,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/schema v1.2.0
 	github.com/gorilla/sessions v1.2.1
-	github.com/joaopandolfi/graphql v1.0.2
+	github.com/joaopandolfi/graphql v1.0.3
 	github.com/kr/beanstalk v0.0.0-20180818045031-cae1762e4858
 	github.com/lib/pq v1.10.6
 	github.com/opentracing/opentracing-go v1.2.0
