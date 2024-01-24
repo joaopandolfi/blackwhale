@@ -93,15 +93,16 @@ func RESTResponseWithStatus(w http.ResponseWriter, resp interface{}, status int)
 func Response(w http.ResponseWriter, resp interface{}, status int) {
 	// set Header
 	header(w)
-	w.WriteHeader(status)
 	b, err := marshaler(resp)
 
 	if err == nil {
 		if w.Header().Get("Content-Encoding") == "gzip" {
+			w.Header().Set("Content-Encoding", "gzip")
 			var compressedData bytes.Buffer
 			gzipBuff := gzip.NewWriter(&compressedData)
 			if _, err := gzipBuff.Write(b); err != nil {
 				ResponseError(w, "gzipping response")
+				return
 			}
 			gzipBuff.Close()
 			b = compressedData.Bytes()
@@ -112,6 +113,7 @@ func Response(w http.ResponseWriter, resp interface{}, status int) {
 		utils.Error("Error on convert response to JSON", err)
 		ResponseError(w, "Error on convert response to JSON")
 	}
+	w.WriteHeader(status)
 }
 
 // ResponseError - Make default generic response

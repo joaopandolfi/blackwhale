@@ -4,7 +4,8 @@ import (
 	"bytes"
 	"compress/gzip"
 	"crypto/tls"
-	"io/ioutil"
+	"io"
+
 	"net/http"
 	"time"
 
@@ -48,7 +49,7 @@ func Get(url string) (body []byte) {
 		}
 	}()
 
-	body, err = ioutil.ReadAll(resp.Body)
+	body, err = io.ReadAll(resp.Body)
 
 	if err != nil {
 		fmt.Println(err)
@@ -94,9 +95,8 @@ func RequestWithHeader(method, url string, head map[string]string, data []byte) 
 	defer resp.Body.Close()
 
 	var b []byte
-
 	if resp.Header.Get("Content-Encoding") != "gzip" {
-		b, err := ioutil.ReadAll(resp.Body)
+		b, err := io.ReadAll(resp.Body)
 
 		if err != nil {
 			return b, resp.StatusCode, fmt.Errorf("[RequestWithHeader] - Error on Read Body result, URL: %s, DATA: %s , ERROR: %w", url, string(data), err)
@@ -161,7 +161,7 @@ func Post(url string, data []byte) (body []byte, err error) {
 		}
 	}()
 
-	body, err = ioutil.ReadAll(resp.Body)
+	body, err = io.ReadAll(resp.Body)
 
 	if err != nil {
 		err = errors.New(fmt.Sprintf("[Post] - Error on Read Body result, URL: %s, DATA: %s , ERROR: %s", url, string(data), err.Error()))
@@ -195,7 +195,7 @@ func GetWithHeader(url string, head map[string]string) (body []byte, err error) 
 	}
 
 	defer resp.Body.Close()
-	body, err = ioutil.ReadAll(resp.Body)
+	body, err = io.ReadAll(resp.Body)
 
 	if err != nil {
 		err = errors.New(fmt.Sprintf("[GetWithHeader] - Error on Read Body result, URL: %s, ERROR: %s", url, err.Error()))
