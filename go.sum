@@ -173,6 +173,10 @@ github.com/joaopandolfi/graphql v1.0.1 h1:q/u4H+HAMGg100Z3VrGvWNv/5MaDGfy9IiFZQ8
 github.com/joaopandolfi/graphql v1.0.1/go.mod h1:+WtMplhe3IVWu61mHSu0UztYwjuQdIG82OTh0uuW1c8=
 github.com/joaopandolfi/graphql v1.0.2 h1:X9f3FVDhrw87wR0EZG1wueDeyWV7foPIMJ1ytXZL2tU=
 github.com/joaopandolfi/graphql v1.0.2/go.mod h1:+WtMplhe3IVWu61mHSu0UztYwjuQdIG82OTh0uuW1c8=
+github.com/joaopandolfi/graphql v1.0.3 h1:auOKmk4PkuLsGazjlldFzugJG77bkrKTbcUfzHnO7sY=
+github.com/joaopandolfi/graphql v1.0.3/go.mod h1:+WtMplhe3IVWu61mHSu0UztYwjuQdIG82OTh0uuW1c8=
+github.com/joaopandolfi/graphql v1.0.4 h1:TBOYqQ0qyB20lAmPphfyTFySG//uLFK8b4QvM13U9tg=
+github.com/joaopandolfi/graphql v1.0.4/go.mod h1:+WtMplhe3IVWu61mHSu0UztYwjuQdIG82OTh0uuW1c8=
 github.com/jpillora/backoff v1.0.0/go.mod h1:J/6gKK9jxlEcS3zixgDgUAsiuZ7yrSoa/FX5e0EB2j4=
 github.com/json-iterator/go v1.1.6/go.mod h1:+SdeFBvtyEkXs7REEP0seUULqWtbJapLOCVDaaPEHmU=
 github.com/json-iterator/go v1.1.10/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=
