@@ -36,7 +36,7 @@ func NewHasuraClient(GraphQLServerURL, SystemToken string) HasuraClient {
 // Creates an HasuraClient with provided config.
 func NewHasuraClientTo(config *HasuraClientConfig) HasuraClient {
 	return &hasura{
-		client:      *graphql.NewClient(config.Url, graphql.UseGzip()),
+		client:      *graphql.NewClient(config.Url, graphql.ReceiveGzip()),
 		systemToken: config.SystemToken,
 	}
 }
