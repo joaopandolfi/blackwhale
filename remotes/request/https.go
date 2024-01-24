@@ -66,7 +66,7 @@ func RequestWithHeader(method, url string, head map[string]string, data []byte) 
 		var compressedData bytes.Buffer
 		gzipBuff := gzip.NewWriter(&compressedData)
 		if _, err := gzipBuff.Write(data); err != nil {
-			return nil, http.StatusExpectationFailed, fmt.Errorf("gzipping body: %w")
+			return nil, http.StatusExpectationFailed, fmt.Errorf("gzipping body: %w", err)
 		}
 		gzipBuff.Close()
 		payloadData = &compressedData
@@ -105,12 +105,12 @@ func RequestWithHeader(method, url string, head map[string]string, data []byte) 
 	} else {
 		r, err := gzip.NewReader(resp.Body)
 		if err != nil {
-			return nil, http.StatusExpectationFailed, fmt.Errorf("reading gzip body: %w")
+			return nil, http.StatusExpectationFailed, fmt.Errorf("reading gzip body: %w", err)
 		}
 		var resB bytes.Buffer
 		_, err = resB.ReadFrom(r)
 		if err != nil {
-			return nil, http.StatusExpectationFailed, fmt.Errorf("reading gzip bytes: %w")
+			return nil, http.StatusExpectationFailed, fmt.Errorf("reading gzip bytes: %w", err)
 		}
 		r.Close()
 		b = resB.Bytes()

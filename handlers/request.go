@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -47,17 +49,22 @@ func header(w http.ResponseWriter) {
 	w.Header().Add("Content-Type", "application/json")
 }
 
+func writeError(w http.ResponseWriter, b []byte) {
+	w.Header().Del("Content-Encoding")
+	w.Write(b)
+}
+
 // responseError - Private function to make response
 func responseError(w http.ResponseWriter, message string) {
 	b, _ := json.Marshal(map[string]string{"message": message})
 	w.WriteHeader(http.StatusInternalServerError)
-	w.Write(b)
+	writeError(w, b)
 }
 
 // restResponseError - Private function to response in mode RES error
 func restResponseError(w http.ResponseWriter, message string) {
 	b, _ := json.Marshal(map[string]interface{}{"success": false, "message": message})
-	w.Write(b)
+	writeError(w, b)
 }
 
 // RESTResponse - Make default REST API response
@@ -68,13 +75,13 @@ func RESTResponse(w http.ResponseWriter, resp interface{}) {
 func ResponseTypedError(w http.ResponseWriter, code int, message string, stack error) {
 	b, _ := json.Marshal(errors.NewTypedError(code, message, stack))
 	w.WriteHeader(http.StatusInternalServerError)
-	w.Write(b)
+	writeError(w, b)
 }
 
 func ResponseTypedErrorWithStatus(w http.ResponseWriter, statusCode, code int, message string, stack error) {
 	b, _ := json.Marshal(errors.NewTypedError(code, message, stack))
 	w.WriteHeader(statusCode)
-	w.Write(b)
+	writeError(w, b)
 }
 
 // RESTResponseWithStatus - Make default REST API response with statuscode
@@ -90,6 +97,15 @@ func Response(w http.ResponseWriter, resp interface{}, status int) {
 	b, err := marshaler(resp)
 
 	if err == nil {
+		if w.Header().Get("Content-Encoding") == "gzip" {
+			var compressedData bytes.Buffer
+			gzipBuff := gzip.NewWriter(&compressedData)
+			if _, err := gzipBuff.Write(b); err != nil {
+				ResponseError(w, "gzipping response")
+			}
+			gzipBuff.Close()
+			b = compressedData.Bytes()
+		}
 		// Responde
 		w.Write(b)
 	} else {
@@ -102,6 +118,8 @@ func Response(w http.ResponseWriter, resp interface{}, status int) {
 func ResponseError(w http.ResponseWriter, resp interface{}) {
 	// set Header
 	header(w)
+	w.Header().Del("Content-Encoding")
+
 	b, _ := marshaler(resp)
 	responseError(w, string(b))
 }
