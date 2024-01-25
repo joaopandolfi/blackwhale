@@ -25,8 +25,6 @@ func Gzip(h http.Handler) http.Handler {
 			}
 
 			r.Body = reader
-
-			w.Header().Add("Content-Enconding", "gzip")
 		}
 
 		h.ServeHTTP(w, r)

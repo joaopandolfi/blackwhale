@@ -96,7 +96,7 @@ func Response(w http.ResponseWriter, resp interface{}, status int) {
 	b, err := marshaler(resp)
 
 	if err == nil {
-		if w.Header().Get("Content-Encoding") == "gzip" {
+		if strings.Contains(w.Header().Get("Accept-Encoding"), "gzip") {
 			w.Header().Set("Content-Encoding", "gzip")
 			var compressedData bytes.Buffer
 			gzipBuff := gzip.NewWriter(&compressedData)
