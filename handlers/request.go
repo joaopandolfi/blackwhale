@@ -30,12 +30,19 @@ var wordBarrierRegex = regexp.MustCompile(`([a-z_0-9])([A-Z])`)
 // marshaler
 var marshaler func(v interface{}) ([]byte, error) = json.Marshal
 
+var activeZipOnResponse = false
+
 // ActiveSnakeCase default json encoder
 func ActiveSnakeCase() {
 	marshaler = func(v interface{}) ([]byte, error) {
 		marshaler := conjson.NewMarshaler(v, transform.ConventionalKeys())
 		return json.MarshalIndent(marshaler, "", " ")
 	}
+}
+
+// ActiveZipOnResponse active compression protocol on response payload
+func ActiveZipOnResponse() {
+	activeZipOnResponse = true
 }
 
 // SnakeCaseDecoder json
@@ -50,7 +57,6 @@ func header(w http.ResponseWriter) {
 }
 
 func writeError(w http.ResponseWriter, b []byte) {
-	w.Header().Del("Content-Encoding")
 	w.Write(b)
 }
 
@@ -96,7 +102,7 @@ func Response(w http.ResponseWriter, resp interface{}, status int) {
 	b, err := marshaler(resp)
 
 	if err == nil {
-		if strings.Contains(w.Header().Get("Accept-Encoding"), "gzip") {
+		if activeZipOnResponse && strings.Contains(w.Header().Get("Accept-Encoding"), "gzip") {
 			w.Header().Set("Content-Encoding", "gzip")
 			var compressedData bytes.Buffer
 			gzipBuff := gzip.NewWriter(&compressedData)
