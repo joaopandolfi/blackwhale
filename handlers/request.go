@@ -108,12 +108,13 @@ func Response(w http.ResponseWriter, resp interface{}, status int) {
 			b = compressedData.Bytes()
 		}
 		// Responde
+		w.WriteHeader(status)
 		w.Write(b)
 	} else {
 		utils.Error("Error on convert response to JSON", err)
 		ResponseError(w, "Error on convert response to JSON")
+		return
 	}
-	w.WriteHeader(status)
 }
 
 // ResponseError - Make default generic response
