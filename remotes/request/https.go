@@ -96,7 +96,7 @@ func RequestWithHeader(method, url string, head map[string]string, data []byte) 
 	defer resp.Body.Close()
 
 	var b []byte
-	if strings.Contains(resp.Header.Get("Content-Encoding"), "gzip") {
+	if resp.Uncompressed && strings.Contains(resp.Header.Get("Content-Encoding"), "gzip") {
 		r, err := gzip.NewReader(resp.Body)
 		if err != nil {
 			return nil, http.StatusExpectationFailed, fmt.Errorf("reading gzip body: %w", err)
