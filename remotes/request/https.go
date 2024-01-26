@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"crypto/tls"
 	"io"
+	"strings"
 
 	"net/http"
 	"time"
@@ -95,25 +96,25 @@ func RequestWithHeader(method, url string, head map[string]string, data []byte) 
 	defer resp.Body.Close()
 
 	var b []byte
-	if resp.Header.Get("Content-Encoding") != "gzip" {
-		b, err := io.ReadAll(resp.Body)
-
-		if err != nil {
-			return b, resp.StatusCode, fmt.Errorf("[RequestWithHeader] - Error on Read Body result, URL: %s, DATA: %s , ERROR: %w", url, string(data), err)
-		}
-
-	} else {
+	if strings.Contains(resp.Header.Get("Content-Encoding"), "gzip") {
 		r, err := gzip.NewReader(resp.Body)
 		if err != nil {
 			return nil, http.StatusExpectationFailed, fmt.Errorf("reading gzip body: %w", err)
 		}
-		var resB bytes.Buffer
-		_, err = resB.ReadFrom(r)
+		var compressB bytes.Buffer
+		_, err = compressB.ReadFrom(r)
 		if err != nil {
 			return nil, http.StatusExpectationFailed, fmt.Errorf("reading gzip bytes: %w", err)
 		}
 		r.Close()
-		b = resB.Bytes()
+		b = compressB.Bytes()
+
+	} else {
+		plainB, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return b, resp.StatusCode, fmt.Errorf("[RequestWithHeader] - Error on Read Body result, URL: %s, DATA: %s , ERROR: %w", url, string(data), err)
+		}
+		b = plainB
 	}
 
 	return b, resp.StatusCode, err
