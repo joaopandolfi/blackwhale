@@ -31,6 +31,12 @@ func Initialize(tick time.Duration) Cache {
 	return cacheInstance
 }
 
+func WaitAndPropagateInitializedSignal() bool {
+	b := <-InitializedChan
+	InitializedChan <- b
+	return b
+}
+
 func Get() Cache {
 	if cacheInstance == nil {
 		panic("cache not initialized")
