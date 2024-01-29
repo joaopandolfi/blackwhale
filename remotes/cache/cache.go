@@ -12,6 +12,8 @@ var cacheInstance Cache
 
 var InitializedChan chan bool = make(chan bool, 2)
 
+var waitListenners []chan bool
+
 type Cache interface {
 	Put(key string, data interface{}, duration time.Duration) error
 	Get(key string) (interface{}, error)
@@ -27,8 +29,23 @@ func Initialize(tick time.Duration) Cache {
 	} else {
 		cacheInstance = initializeMemory(tick)
 	}
-	InitializedChan <- true
+	initialized()
 	return cacheInstance
+}
+
+func AddInitializedListenner(l chan bool) {
+	if waitListenners == nil {
+		waitListenners = []chan bool{}
+	}
+	waitListenners = append(waitListenners, l)
+}
+
+func initialized() {
+	InitializedChan <- true
+	for _, c := range waitListenners {
+		c <- true
+	}
+	waitListenners = nil
 }
 
 func Get() Cache {
