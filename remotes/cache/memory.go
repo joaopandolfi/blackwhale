@@ -32,6 +32,7 @@ func initializeMemory(tick time.Duration) Cache {
 
 		mcache.startGarbageCollector(tick)
 		<-mcache.garbageInitialized
+		close(mcache.garbageInitialized)
 	}
 	return mcache
 }
