@@ -67,7 +67,6 @@ func (c *memCache) Delete(key string) error {
 	defer c.mu.Unlock()
 	c.buff[key] = nil
 	delete(c.buff, key)
-	fmt.Println("DELETED", key)
 	return nil
 }
 
