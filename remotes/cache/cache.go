@@ -10,6 +10,8 @@ const MAX_BUFF_SIZE = 150
 
 var cacheInstance Cache
 
+var InitializedChan chan bool = make(chan bool, 2)
+
 type Cache interface {
 	Put(key string, data interface{}, duration time.Duration) error
 	Get(key string) (interface{}, error)
@@ -25,6 +27,7 @@ func Initialize(tick time.Duration) Cache {
 	} else {
 		cacheInstance = initializeMemory(tick)
 	}
+	InitializedChan <- true
 	return cacheInstance
 }
 
