@@ -49,7 +49,9 @@ func (c *memCache) Get(key string) (interface{}, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	if val, ok := c.buff[key]; ok {
-		return val.value, nil
+		if val.validAt.Before(time.Now()) {
+			return val.value, nil
+		}
 	}
 	return nil, nil
 }
@@ -82,7 +84,7 @@ func (c *memCache) startGarbageCollector(tick time.Duration) {
 	c.garbageStop = make(chan bool)
 
 	go func() {
-		utils.Info("[LOCAL_CACHE][GARBAGE COLLECTOR]", "START")
+		utils.Info("[LOCAL_CACHE][GARBAGE COLLECTOR]", "START", tick.Seconds())
 		for {
 			select {
 			case <-c.garbageStop:
