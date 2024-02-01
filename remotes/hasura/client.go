@@ -9,6 +9,8 @@ import (
 	"github.com/joaopandolfi/blackwhale/remotes/jaeger"
 )
 
+const defaultRole = "system"
+
 // Connect with an Hasura GraphQL API
 type HasuraClient interface {
 	Query(ctx context.Context, query string, vars *Variables) (*QueryResult, error)
@@ -18,11 +20,13 @@ type HasuraClient interface {
 type HasuraClientConfig struct {
 	Url         string
 	SystemToken string
+	Role        string
 }
 
 type hasura struct {
 	client      graphql.Client
 	systemToken string
+	role        string
 }
 
 // Creates an HasuraClient
@@ -30,6 +34,7 @@ func NewHasuraClient(GraphQLServerURL, SystemToken string) HasuraClient {
 	return NewHasuraClientTo(&HasuraClientConfig{
 		Url:         GraphQLServerURL,
 		SystemToken: fmt.Sprintf("Bearer %s", SystemToken),
+		Role:        defaultRole,
 	})
 }
 
@@ -38,6 +43,7 @@ func NewHasuraClientTo(config *HasuraClientConfig) HasuraClient {
 	return &hasura{
 		client:      *graphql.NewClient(config.Url, graphql.ReceiveGzip()),
 		systemToken: config.SystemToken,
+		role:        config.Role,
 	}
 }
 
@@ -64,7 +70,7 @@ func (h *hasura) Mutate(ctx context.Context, mutation string, vars *Variables) (
 
 func (h *hasura) run(cmd string, vars *Variables) (*QueryResult, error) {
 	req := graphql.NewRequest(cmd)
-	req.Header.Add("x-hasura-role", "system")
+	req.Header.Add("x-hasura-role", h.role)
 	req.Header.Add("Authorization", h.systemToken)
 	req.Header.Set("Cache-Control", "no-cache")
 
