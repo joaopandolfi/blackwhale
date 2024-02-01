@@ -7,6 +7,18 @@ import (
 	"github.com/joaopandolfi/blackwhale/utils/snake_case"
 )
 
+const (
+	Eq     = "_eq"
+	IsNull = "_is_null"
+)
+
+type Order string
+
+const (
+	OrderAsc  Order = "asc"
+	OrderDesc Order = "desc"
+)
+
 type QueryResult struct {
 	Data map[string]interface{}
 }
@@ -48,3 +60,48 @@ func VariablesFrom(data interface{}) (*Variables, error) {
 }
 
 type Where map[string]interface{}
+
+func (m *Where) AddEquals(key string, value interface{}) *Where {
+	(*m)[key] = map[string]interface{}{
+		Eq: value,
+	}
+
+	return m
+}
+
+func (m *Where) AddIsNull(key string) *Where {
+	(*m)[key] = map[string]interface{}{
+		IsNull: true,
+	}
+	return m
+}
+
+func NewWhere() *Where {
+	return &Where{}
+}
+
+type OrderBy map[string]Order
+
+type QueryArgs struct {
+	Where   *Where
+	OrderBy *OrderBy
+	Limit   *int
+	Offset  *int
+}
+
+func (m *QueryArgs) Variables() Variables {
+	vars := Variables{}
+	if m.Where != nil {
+		vars["where"] = m.Where
+	}
+	if m.OrderBy != nil {
+		vars["order_by"] = m.OrderBy
+	}
+	if m.Limit != nil {
+		vars["limit"] = m.Limit
+	}
+	if m.Offset != nil {
+		vars["offset"] = m.Offset
+	}
+	return vars
+}
