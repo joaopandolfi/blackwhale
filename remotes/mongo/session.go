@@ -3,16 +3,16 @@ package mongo
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net"
 	"strings"
 	"sync"
 
+	"fmt"
+
 	"github.com/joaopandolfi/blackwhale/configurations"
 	"github.com/joaopandolfi/blackwhale/utils"
-	"golang.org/x/xerrors"
 	"gopkg.in/mgo.v2"
 )
 
@@ -239,5 +239,5 @@ func (s *Session) Health() error {
 	if s.session != nil {
 		return s.session.Ping()
 	}
-	return xerrors.Errorf("checking health: session is nill")
+	return fmt.Errorf("checking health: session is nill")
 }

@@ -4,16 +4,18 @@ import (
 	"sync"
 	"time"
 
+	"fmt"
+
 	"github.com/joaopandolfi/blackwhale/utils"
-	"golang.org/x/xerrors"
 )
 
 var mcache *memCache
 
 type memCache struct {
-	buff        map[string]stored
-	garbageStop chan bool
-	mu          sync.RWMutex
+	buff               map[string]*stored
+	garbageStop        chan bool
+	mu                 sync.RWMutex
+	garbageInitialized chan bool
 }
 
 func GetMemory() Cache {
@@ -24,20 +26,25 @@ func initializeMemory(tick time.Duration) Cache {
 	if mcache == nil {
 		utils.Info("[CACHE] using local cache", "Memory")
 		mcache = &memCache{
-			buff: map[string]stored{},
+			buff:               map[string]*stored{},
+			garbageInitialized: make(chan bool, 1),
 		}
 
 		mcache.startGarbageCollector(tick)
+		<-mcache.garbageInitialized
+		close(mcache.garbageInitialized)
 	}
 	return mcache
 }
 
 func (c *memCache) Put(key string, data interface{}, duration time.Duration) error {
 	if len(c.buff) > MAX_BUFF_SIZE {
-		return xerrors.Errorf("buffer overflow")
+		return fmt.Errorf("buffer overflow")
 	}
 
-	c.buff[key] = stored{
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.buff[key] = &stored{
 		value:   data,
 		validAt: time.Now().Add(duration),
 	}
@@ -45,10 +52,13 @@ func (c *memCache) Put(key string, data interface{}, duration time.Duration) err
 }
 
 func (c *memCache) Get(key string) (interface{}, error) {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if val, ok := c.buff[key]; ok {
-		return val.value, nil
+		now := time.Now()
+		if val.validAt.After(now) {
+			return val.value, nil
+		}
 	}
 	return nil, nil
 }
@@ -56,21 +66,21 @@ func (c *memCache) Get(key string) (interface{}, error) {
 func (c *memCache) Delete(key string) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+	c.buff[key] = nil
 	delete(c.buff, key)
-
 	return nil
 }
 
 func (c *memCache) Flush() error {
 	c.mu.Lock()
-	c.buff = map[string]stored{}
+	c.buff = map[string]*stored{}
 	c.mu.Unlock()
 	return nil
 }
 
 func (c *memCache) Size() int {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	return len(c.buff)
 }
 
@@ -81,7 +91,8 @@ func (c *memCache) startGarbageCollector(tick time.Duration) {
 	c.garbageStop = make(chan bool)
 
 	go func() {
-		utils.Info("[LOCAL_CACHE][GARBAGE COLLECTOR]", "START")
+		utils.Info("[LOCAL_CACHE][GARBAGE COLLECTOR]", "START", tick.Seconds())
+		c.garbageInitialized <- true
 		for {
 			select {
 			case <-c.garbageStop:

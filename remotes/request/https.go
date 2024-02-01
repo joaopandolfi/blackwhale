@@ -2,14 +2,17 @@ package request
 
 import (
 	"bytes"
+	"compress/gzip"
 	"crypto/tls"
-	"fmt"
-	"io/ioutil"
+	"io"
+	"strings"
+
 	"net/http"
 	"time"
 
+	"fmt"
+
 	"github.com/pkg/errors"
-	"golang.org/x/xerrors"
 )
 
 var transport *http.Transport
@@ -47,7 +50,7 @@ func Get(url string) (body []byte) {
 		}
 	}()
 
-	body, err = ioutil.ReadAll(resp.Body)
+	body, err = io.ReadAll(resp.Body)
 
 	if err != nil {
 		fmt.Println(err)
@@ -59,9 +62,21 @@ func Get(url string) (body []byte) {
 func RequestWithHeader(method, url string, head map[string]string, data []byte) ([]byte, int, error) {
 	client := &http.Client{Transport: getTransport()}
 
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
+	payloadData := bytes.NewBuffer(data)
+
+	if head["Content-Encoding"] == "gzip" {
+		var compressedData bytes.Buffer
+		gzipBuff := gzip.NewWriter(&compressedData)
+		if _, err := gzipBuff.Write(data); err != nil {
+			return nil, http.StatusExpectationFailed, fmt.Errorf("gzipping body: %w", err)
+		}
+		gzipBuff.Close()
+		payloadData = &compressedData
+	}
+
+	req, err := http.NewRequest(method, url, payloadData)
 	if err != nil {
-		return nil, 0, xerrors.Errorf("making requester: %w", err)
+		return nil, 0, fmt.Errorf("making requester: %w", err)
 	}
 
 	//Setting Headers
@@ -75,15 +90,31 @@ func RequestWithHeader(method, url string, head map[string]string, data []byte) 
 		if resp != nil {
 			statusCode = resp.StatusCode
 		}
-		return nil, statusCode, xerrors.Errorf("[RequestWithHeader] - Error on make %s request, URL: %s, DATA: %s , ERROR: %w", method, url, string(data), err)
+		return nil, statusCode, fmt.Errorf("[RequestWithHeader] - Error on make %s request, URL: %s, DATA: %s , ERROR: %w", method, url, string(data), err)
 	}
 
 	defer resp.Body.Close()
 
-	b, err := ioutil.ReadAll(resp.Body)
+	var b []byte
+	if resp.Uncompressed && strings.Contains(resp.Header.Get("Content-Encoding"), "gzip") {
+		r, err := gzip.NewReader(resp.Body)
+		if err != nil {
+			return nil, http.StatusExpectationFailed, fmt.Errorf("reading gzip body: %w", err)
+		}
+		var compressB bytes.Buffer
+		_, err = compressB.ReadFrom(r)
+		if err != nil {
+			return nil, http.StatusExpectationFailed, fmt.Errorf("reading gzip bytes: %w", err)
+		}
+		r.Close()
+		b = compressB.Bytes()
 
-	if err != nil {
-		return b, resp.StatusCode, xerrors.Errorf("[RequestWithHeader] - Error on Read Body result, URL: %s, DATA: %s , ERROR: %w", url, string(data), err)
+	} else {
+		plainB, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return b, resp.StatusCode, fmt.Errorf("[RequestWithHeader] - Error on Read Body result, URL: %s, DATA: %s , ERROR: %w", url, string(data), err)
+		}
+		b = plainB
 	}
 
 	return b, resp.StatusCode, err
@@ -113,7 +144,7 @@ func Post(url string, data []byte) (body []byte, err error) {
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 	if err != nil {
-		return nil, xerrors.Errorf("making requester: %w", err)
+		return nil, fmt.Errorf("making requester: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -131,7 +162,7 @@ func Post(url string, data []byte) (body []byte, err error) {
 		}
 	}()
 
-	body, err = ioutil.ReadAll(resp.Body)
+	body, err = io.ReadAll(resp.Body)
 
 	if err != nil {
 		err = errors.New(fmt.Sprintf("[Post] - Error on Read Body result, URL: %s, DATA: %s , ERROR: %s", url, string(data), err.Error()))
@@ -150,7 +181,7 @@ func GetWithHeader(url string, head map[string]string) (body []byte, err error) 
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, xerrors.Errorf("making requester: %w", err)
+		return nil, fmt.Errorf("making requester: %w", err)
 	}
 
 	//Setting Headers
@@ -165,7 +196,7 @@ func GetWithHeader(url string, head map[string]string) (body []byte, err error) 
 	}
 
 	defer resp.Body.Close()
-	body, err = ioutil.ReadAll(resp.Body)
+	body, err = io.ReadAll(resp.Body)
 
 	if err != nil {
 		err = errors.New(fmt.Sprintf("[GetWithHeader] - Error on Read Body result, URL: %s, ERROR: %s", url, err.Error()))

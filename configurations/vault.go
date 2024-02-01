@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/joaopandolfi/blackwhale/remotes/request"
-	"golang.org/x/xerrors"
 )
 
 type VaultPayload struct {
@@ -23,16 +22,16 @@ func LoadVault(host, token, privKey string) (map[string]string, error) {
 		"token": token,
 	})
 	if err != nil {
-		return nil, xerrors.Errorf("loading vault from server (%s): %w", server, err)
+		return nil, fmt.Errorf("loading vault from server (%s): %w", server, err)
 	}
 
 	err = json.Unmarshal(b, &result)
 	if err != nil {
-		return nil, xerrors.Errorf("unmarshaling payload response: %w", err)
+		return nil, fmt.Errorf("unmarshaling payload response: %w", err)
 	}
 
 	if !result.Success {
-		return nil, xerrors.Errorf("received error on load vault: %s", result.Message)
+		return nil, fmt.Errorf("received error on load vault: %s", result.Message)
 	}
 
 	return result.Data, nil

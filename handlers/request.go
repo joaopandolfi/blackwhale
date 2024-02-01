@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -28,12 +30,19 @@ var wordBarrierRegex = regexp.MustCompile(`([a-z_0-9])([A-Z])`)
 // marshaler
 var marshaler func(v interface{}) ([]byte, error) = json.Marshal
 
+var activeZipOnResponse = false
+
 // ActiveSnakeCase default json encoder
 func ActiveSnakeCase() {
 	marshaler = func(v interface{}) ([]byte, error) {
 		marshaler := conjson.NewMarshaler(v, transform.ConventionalKeys())
 		return json.MarshalIndent(marshaler, "", " ")
 	}
+}
+
+// ActiveZipOnResponse active compression protocol on response payload
+func ActiveZipOnResponse() {
+	activeZipOnResponse = true
 }
 
 // SnakeCaseDecoder json
@@ -47,17 +56,21 @@ func header(w http.ResponseWriter) {
 	w.Header().Add("Content-Type", "application/json")
 }
 
+func writeError(w http.ResponseWriter, b []byte) {
+	w.Write(b)
+}
+
 // responseError - Private function to make response
 func responseError(w http.ResponseWriter, message string) {
 	b, _ := json.Marshal(map[string]string{"message": message})
 	w.WriteHeader(http.StatusInternalServerError)
-	w.Write(b)
+	writeError(w, b)
 }
 
 // restResponseError - Private function to response in mode RES error
 func restResponseError(w http.ResponseWriter, message string) {
 	b, _ := json.Marshal(map[string]interface{}{"success": false, "message": message})
-	w.Write(b)
+	writeError(w, b)
 }
 
 // RESTResponse - Make default REST API response
@@ -68,13 +81,13 @@ func RESTResponse(w http.ResponseWriter, resp interface{}) {
 func ResponseTypedError(w http.ResponseWriter, code int, message string, stack error) {
 	b, _ := json.Marshal(errors.NewTypedError(code, message, stack))
 	w.WriteHeader(http.StatusInternalServerError)
-	w.Write(b)
+	writeError(w, b)
 }
 
 func ResponseTypedErrorWithStatus(w http.ResponseWriter, statusCode, code int, message string, stack error) {
 	b, _ := json.Marshal(errors.NewTypedError(code, message, stack))
 	w.WriteHeader(statusCode)
-	w.Write(b)
+	writeError(w, b)
 }
 
 // RESTResponseWithStatus - Make default REST API response with statuscode
@@ -86,15 +99,27 @@ func RESTResponseWithStatus(w http.ResponseWriter, resp interface{}, status int)
 func Response(w http.ResponseWriter, resp interface{}, status int) {
 	// set Header
 	header(w)
-	w.WriteHeader(status)
 	b, err := marshaler(resp)
 
 	if err == nil {
+		if activeZipOnResponse && strings.Contains(w.Header().Get("Accept-Encoding"), "gzip") {
+			w.Header().Set("Content-Encoding", "gzip")
+			var compressedData bytes.Buffer
+			gzipBuff := gzip.NewWriter(&compressedData)
+			if _, err := gzipBuff.Write(b); err != nil {
+				ResponseError(w, "gzipping response")
+				return
+			}
+			gzipBuff.Close()
+			b = compressedData.Bytes()
+		}
 		// Responde
+		w.WriteHeader(status)
 		w.Write(b)
 	} else {
 		utils.Error("Error on convert response to JSON", err)
 		ResponseError(w, "Error on convert response to JSON")
+		return
 	}
 }
 
@@ -102,6 +127,8 @@ func Response(w http.ResponseWriter, resp interface{}, status int) {
 func ResponseError(w http.ResponseWriter, resp interface{}) {
 	// set Header
 	header(w)
+	w.Header().Del("Content-Encoding")
+
 	b, _ := marshaler(resp)
 	responseError(w, string(b))
 }
@@ -112,6 +139,11 @@ func RESTResponseError(w http.ResponseWriter, resp interface{}) {
 	header(w)
 	b, _ := marshaler(resp)
 	restResponseError(w, string(b))
+}
+
+// RESTResponseErrorData - Make REST API default response and put inside a data key
+func RESTResponseErrorData(w http.ResponseWriter, resp interface{}) {
+	Response(w, map[string]interface{}{"success": false, "data": resp}, http.StatusOK)
 }
 
 // Redirect - Redirect page
