@@ -9,6 +9,9 @@ import (
 
 const (
 	Eq     = "_eq"
+	In     = "_in"
+	Lte    = "_lte"
+	Gte    = "_gte"
 	IsNull = "_is_null"
 )
 
@@ -64,6 +67,14 @@ type Where map[string]interface{}
 func (m *Where) AddEquals(key string, value interface{}) *Where {
 	(*m)[key] = map[string]interface{}{
 		Eq: value,
+	}
+
+	return m
+}
+
+func (m *Where) AddExp(key, exp string, value interface{}) *Where {
+	(*m)[key] = map[string]interface{}{
+		exp: value,
 	}
 
 	return m
