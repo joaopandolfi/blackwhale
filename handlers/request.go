@@ -103,7 +103,7 @@ func Response(w http.ResponseWriter, resp interface{}, status int) {
 
 	if err == nil {
 		if activeZipOnResponse && strings.Contains(w.Header().Get("Accept-Encoding"), "gzip") {
-			w.Header().Set("Content-Encoding", "gzip")
+			w.Header().Add("Content-Encoding", "gzip")
 			var compressedData bytes.Buffer
 			gzipBuff := gzip.NewWriter(&compressedData)
 			if _, err := gzipBuff.Write(b); err != nil {
