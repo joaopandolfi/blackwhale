@@ -12,6 +12,10 @@ import (
 	"github.com/joaopandolfi/blackwhale/utils"
 )
 
+type ContextInjection string
+
+const InjectedAuth ContextInjection = ":ci:injectedAuth"
+
 const (
 	HEADER_USERID      = "_xid"
 	HEADER_INSTITUTION = "_xinstitution"
@@ -51,6 +55,9 @@ func TokenHandler(next http.HandlerFunc) http.HandlerFunc {
 		if quiet == nil {
 			utils.Debug("[TokenHandler]", "Authenticated", url)
 		}
+
+		ctx = context.WithValue(ctx, InjectedAuth, true)
+		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)
 	})
@@ -92,11 +99,11 @@ func QuietMiddleware(next http.HandlerFunc) http.HandlerFunc {
 // HandlerTokenPermissions -
 // check if the request contain the permissions
 func HandleTokenPermissions(r *mux.Router, path string, f http.HandlerFunc, permissions []string, methods ...string) {
-	r.HandleFunc(path, Chain(f, PermissionMiddleware(permissions), TokenHandler)).Methods(methods...)
+	r.HandleFunc(path, Chain(f, InjectOperatorOnContext, PermissionMiddleware(permissions), TokenHandler)).Methods(methods...)
 }
 
 // QuietHandlerTokenPermissions -
 // Same as HandlerTokenPermissions but without log url
 func QuietHandleTokenPermissions(r *mux.Router, path string, f http.HandlerFunc, permissions []string, methods ...string) {
-	r.HandleFunc(path, Chain(f, PermissionMiddleware(permissions), TokenHandler, QuietMiddleware)).Methods(methods...)
+	r.HandleFunc(path, Chain(f, InjectOperatorOnContext, PermissionMiddleware(permissions), TokenHandler, QuietMiddleware)).Methods(methods...)
 }
