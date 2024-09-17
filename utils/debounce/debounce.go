@@ -84,18 +84,20 @@ func clearChannel(id string) {
 
 func setCounter(id string) {
 	counterMutex.Lock()
+	defer counterMutex.Unlock()
 	counter[id] = 0
-	counterMutex.Unlock()
 }
 
 func clearCounter(id string) {
 	counterMutex.Lock()
+	defer counterMutex.Unlock()
 	delete(counter, id)
-	counterMutex.Unlock()
+
 }
 
-func increaseCounter(id string) {
+func increaseCounter(id string) int {
 	counterMutex.Lock()
+	defer counterMutex.Unlock()
 	counter[id]++
-	counterMutex.Unlock()
+	return counter[id]
 }
