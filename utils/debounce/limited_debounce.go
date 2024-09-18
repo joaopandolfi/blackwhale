@@ -22,7 +22,7 @@ func RunLimited(
 
 	var payload interface{}
 	timer := time.NewTimer(interval)
-	tick := make(chan bool)
+	tick := make(chan bool, 2)
 	for {
 		select {
 		case payload = <-input:
