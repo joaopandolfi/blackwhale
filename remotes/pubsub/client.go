@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	ps "cloud.google.com/go/pubsub"
+	"github.com/joaopandolfi/blackwhale/utils"
 )
 
 type DriverContract interface {
@@ -22,9 +23,14 @@ type Driver struct {
 	topics        map[string]*ps.Topic
 	muTopics      sync.Mutex
 	muSubs        sync.Mutex
+	errorHandler  func(e error)
 }
 
 var client *Driver
+
+var DefaultErrorHandler = func(e error) {
+	utils.CriticalError("[PubSub][Client][DefaultErrorHandler]", e.Error())
+}
 
 // Init start the pubsub client
 // To work, you need to setup the env GOOGLE_APPLICATION_CREDENTIALS with the json path
@@ -40,6 +46,7 @@ func Init(c context.Context, projectID string) error {
 		Ctx:           c,
 		subscriptions: map[string]*subscription{},
 		topics:        map[string]*ps.Topic{},
+		errorHandler:  DefaultErrorHandler,
 	}
 	return nil
 }
@@ -101,15 +108,19 @@ func (c *Driver) Subscribe(channel string, ch chan *Message) error {
 		channels: []chan *Message{ch},
 	}
 
-	err := sub.Receive(c.Ctx, func(ctx context.Context, m *ps.Message) {
-		for i := range c.subscriptions[channel].channels {
-			c.subscriptions[channel].channels[i] <- &Message{M: m}
-		}
-	})
+	go func() {
+		err := sub.Receive(c.Ctx, func(ctx context.Context, m *ps.Message) {
+			for i := range c.subscriptions[channel].channels {
+				c.subscriptions[channel].channels[i] <- &Message{M: m}
+			}
+		})
 
-	if err != nil {
-		return fmt.Errorf("injecting receiver on subscription: %w", err)
-	}
+		if err != nil {
+			if c.errorHandler != nil {
+				c.errorHandler(fmt.Errorf("injecting receiver on subscription: %w", err))
+			}
+		}
+	}()
 
 	return nil
 }
