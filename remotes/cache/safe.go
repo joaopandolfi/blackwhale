@@ -10,6 +10,7 @@ var defaultCacheStoreTime time.Duration = time.Second * 50
 type SafeCache[T any] interface {
 	Get(key string) *T
 	Put(key string, data T) error
+	Delete(key string) error
 	PutDuration(key string, data T, duration time.Duration) error
 	Size() int
 	Flush() error
@@ -46,6 +47,10 @@ func (m *tCache[T]) Get(key string) *T {
 	}
 
 	return &valT
+}
+
+func (m *tCache[T]) Delete(key string) error {
+	return m.cache.Delete(key)
 }
 
 func (m *tCache[T]) Put(key string, data T) error {
