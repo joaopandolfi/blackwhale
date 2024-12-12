@@ -25,7 +25,7 @@ require (
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
 	github.com/unrolled/secure v1.17.0
 	go.mongodb.org/mongo-driver v1.17.1
-	golang.org/x/crypto v0.28.0
+	golang.org/x/crypto v0.31.0
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 	gorm.io/gorm v1.25.12
 )
@@ -78,9 +78,9 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/net v0.30.0 // indirect
 	golang.org/x/oauth2 v0.23.0 // indirect
-	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
-	golang.org/x/text v0.19.0 // indirect
+	golang.org/x/sync v0.10.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/time v0.7.0 // indirect
 	google.golang.org/api v0.203.0 // indirect
 	google.golang.org/genproto v0.0.0-20241021214115-324edc3d5d38 // indirect
