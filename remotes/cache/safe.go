@@ -36,6 +36,9 @@ func (m *tCache[T]) inject(c Cache) {
 }
 
 func (m *tCache[T]) Get(key string) *T {
+	if m.cache == nil {
+		return nil
+	}
 	val, _ := m.cache.Get(key)
 	if val == nil {
 		return nil
@@ -50,6 +53,9 @@ func (m *tCache[T]) Get(key string) *T {
 }
 
 func (m *tCache[T]) Delete(key string) error {
+	if m.cache == nil {
+		return fmt.Errorf("cache not initialized")
+	}
 	return m.cache.Delete(key)
 }
 
@@ -58,6 +64,9 @@ func (m *tCache[T]) Put(key string, data T) error {
 }
 
 func (m *tCache[T]) PutDuration(key string, data T, duration time.Duration) error {
+	if m.cache == nil {
+		return fmt.Errorf("cache not initialized")
+	}
 	err := m.cache.Put(key, data, duration)
 	if err != nil {
 		return fmt.Errorf("putting data in cache: %w", err)

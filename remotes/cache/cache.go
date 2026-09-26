@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"sync"
 	"time"
 
 	"github.com/joaopandolfi/blackwhale/v2/configurations"
@@ -13,6 +14,7 @@ var cacheInstance Cache
 var InitializedChan chan struct{} = make(chan struct{}, 2)
 
 var waitListenners []chan struct{}
+var waitListennersMu sync.RWMutex
 
 type Cache interface {
 	Put(key string, data any, duration time.Duration) error
@@ -34,18 +36,21 @@ func Initialize(tick time.Duration) Cache {
 }
 
 func AddInitializedListenner(l chan struct{}) {
-	if waitListenners == nil {
-		waitListenners = []chan struct{}{}
-	}
+	waitListennersMu.Lock()
 	waitListenners = append(waitListenners, l)
+	waitListennersMu.Unlock()
 }
 
 func initialized() {
+	waitListennersMu.Lock()
+	listeners := waitListenners
+	waitListenners = nil
+	waitListennersMu.Unlock()
+
 	InitializedChan <- struct{}{}
-	for _, c := range waitListenners {
+	for _, c := range listeners {
 		c <- struct{}{}
 	}
-	waitListenners = nil
 }
 
 func Get() Cache {
