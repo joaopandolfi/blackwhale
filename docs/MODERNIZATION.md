@@ -155,9 +155,9 @@ Sequenciado p/ reduzir risco: primeiro o que habilita o resto, depois segurança
 4. ✅ JWT expirado removido do teste do hasura (`HASURA_SYSTEM_TOKEN` obrigatório)
 5. 🔲 Rotacionar o que foi exposto (ação do mantenedor, se o repo já foi compartilhado)
 
-### Fase 3 — Deps e código (mecânico → arriscado)
-1. 🔲 **Mecânico e seguro** (PR separado): `interface{}`→`any` (164), `chan bool`→`chan struct{}` (18), `ioutil`→`io`, `pkg/errors`→stdlib, `errors.New(fmt.Sprintf)` (4 locais), 26 `fmt.Errorf` sem `%w`
-2. 🔲 **Upgrades c/ risco de regressão** (1 por PR): jwt v4→v5 (c/ dedup), redis v8→v9, mongo-driver v1→v2, validator v9→v10, `streadway/amqp`→`rabbitmq/amqp091-go`, opentracing/jaeger→**OpenTelemetry**
+### Fase 3 — Deps e código (branch `v2`) — **~50% done**
+1. ✅ **Mecânico e seguro** (4 commits atômicos): `interface{}`→`any` (175), `chan bool`→`chan struct{}` (18), `ioutil`→`io/os` (2), `pkg/errors`→stdlib `fmt.Errorf` c/ `%w` (7, incluindo os `errors.New(fmt.Sprintf)`) + `go mod tidy` (pkg/errors caiu p/ indirect). Ficam p/ Fase 4 os `fmt.Errorf` sem `%w` restantes (caso a caso).
+2. ✅/🔲 **Upgrades (1 por commit)**: ✅ `streadway/amqp`→`rabbitmq/amqp091-go` (pacote `amqp091`) · ✅ redis v8→v9 · ✅ validator v9→v10 · 🔲 jwt v4→v5 · 🔲 mongo-driver v1→v2 · 🔲 opentracing/jaeger→**OpenTelemetry**
 3. 🔲 **Matar `mgo.v2`:** migrar `remotes/mongo` pro driver oficial e apagar a geração antiga
 4. 🔲 **gorilla/mux → chi v5** — o maior item. Regra de ouro: API pública continua **shaped em `net/http`** (handlers = `http.Handler`, middlewares = `func(http.Handler) http.Handler`)
 
