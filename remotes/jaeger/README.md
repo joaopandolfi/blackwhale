@@ -1,35 +1,48 @@
-# Jaeger tracing implementation
+# Jaeger tracing (OpenTelemetry)
+
+Spans are exported to Jaeger over OTLP. Jaeger v1.35+/v2 natively accepts OTLP.
 
 ## Config
-You need setup those envs
-```
-    - JAEGER_SERVICE_NAME=service-x
-    - JAEGER_AGENT_HOST=jaeger
-    - JAEGER_SAMPLER_TYPE=const
-    - JAEGER_SAMPLER_PARAM=1
-    - JAEGER_REPORTER_LOG_SPANS=true
-```
+
+| Env | Default | Purpose |
+|---|---|---|
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4318` | OTLP HTTP endpoint |
+| `OTEL_TRACES_SAMPLER` | `parentbased_always_on` | Standard OTel sampler (`always_on`, `traceidratio`, ...) |
+| `OTEL_TRACES_SAMPLER_ARG` | - | Sampler argument (e.g. ratio `0.1`) |
 
 ## Init
-```GoLang
-	tracer, closer := jaeger.Init(thisServiceName)
-	defer closer.Close()
-	opentracing.SetGlobalTracer(tracer)
+
+```go
+provider, closer := jaeger.Init(thisServiceName)
+defer closer.Close()
 ```
+
+`Init` sets the provider as the global one, so the span helpers below work without
+an explicit tracer argument.
 
 ## Start tracing
-```GoLang
-    newCtx, span := jaeger.SpanTrace(r.Context(), "test", map[string]interface{}{})
-    defer span.Finish()
+
+```go
+ctx, span := jaeger.SpanTrace(r.Context(), "test", map[string]any{"k": "v"})
+defer span.End()
 ```
 
-## Start tracing from http context
-```GoLang
-    newCtx, span := jaeger.StartSpanFromRequest(tracer, r)
-    defer span.Finish()
+## Start tracing from an inbound HTTP request
+
+```go
+ctx, span := jaeger.StartSpanFromRequest(r, "op.name")
+defer span.End()
 ```
 
-## Running local jaeger host
+## Propagate to an outbound HTTP request
+
+```go
+req = req.WithContext(ctx)
+jaeger.Inject(req)
+```
+
+## Running a local Jaeger host
+
 ```yaml
 version: '3'
 services:
@@ -38,11 +51,8 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - JAEGER_SERVICE_NAME=service-a
-      - JAEGER_AGENT_HOST=jaeger
-      - JAEGER_SAMPLER_TYPE=const
-      - JAEGER_SAMPLER_PARAM=1
-      - JAEGER_REPORTER_LOG_SPANS=true
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
+      - OTEL_TRACES_SAMPLER=always_on
   jaeger:
     image: jaegertracing/all-in-one
     ports:

@@ -2,35 +2,46 @@ package jaeger
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/ext"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	otelprop "go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
 )
 
-// StartSpanFromRequest extracts the parent span context from the inbound HTTP request
-// and starts a new child span if there is a parent span.
-func StartSpanFromRequest(tracer opentracing.Tracer, r *http.Request, name string) (context.Context, opentracing.Span) {
-	spanCtx, _ := Extract(tracer, r)
-	newSpan := tracer.StartSpan(name, ext.RPCServerOption(spanCtx))
-	newCtx := opentracing.ContextWithSpan(r.Context(), newSpan)
-	return newCtx, newSpan
+const tracerName = "blackwhale"
+
+// StartSpanFromRequest extracts the W3C trace context from the inbound HTTP
+// request and starts a server span as its child.
+func StartSpanFromRequest(r *http.Request, name string) (context.Context, trace.Span) {
+	ctx := otel.GetTextMapPropagator().Extract(r.Context(), otelprop.HeaderCarrier(r.Header))
+	return otel.Tracer(tracerName).Start(ctx, name, trace.WithSpanKind(trace.SpanKindServer))
 }
 
-// SpanTrace creates a tracing and returns the new context and finisher
-func SpanTrace(ctx context.Context, operationName string, tags map[string]any) (context.Context, opentracing.Span) {
-	// Get span parent
-	var parent opentracing.SpanContext
-	currentSpan := opentracing.SpanFromContext(ctx)
-	if currentSpan != nil {
-		parent = currentSpan.Context()
+// SpanTrace starts a client span as a child of the span carried in ctx
+func SpanTrace(ctx context.Context, operationName string, tags map[string]any) (context.Context, trace.Span) {
+	return otel.Tracer(tracerName).Start(ctx, operationName, trace.WithAttributes(toAttributes(tags)...))
+}
+
+func toAttributes(tags map[string]any) []attribute.KeyValue {
+	attrs := make([]attribute.KeyValue, 0, len(tags))
+	for k, v := range tags {
+		switch value := v.(type) {
+		case string:
+			attrs = append(attrs, attribute.String(k, value))
+		case bool:
+			attrs = append(attrs, attribute.Bool(k, value))
+		case int:
+			attrs = append(attrs, attribute.Int(k, value))
+		case int64:
+			attrs = append(attrs, attribute.Int64(k, value))
+		case float64:
+			attrs = append(attrs, attribute.Float64(k, value))
+		default:
+			attrs = append(attrs, attribute.String(k, fmt.Sprint(value)))
+		}
 	}
-	parentReference := opentracing.ChildOf(parent)
-
-	// Create new span
-	newSpan := opentracing.StartSpan(operationName, parentReference, opentracing.Tags(tags))
-	// Get context of new span
-	newCtx := opentracing.ContextWithSpan(ctx, newSpan)
-
-	return newCtx, newSpan
+	return attrs
 }

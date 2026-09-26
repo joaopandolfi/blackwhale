@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"go.opentelemetry.io/otel/trace"
+
 	"github.com/joaopandolfi/blackwhale/v2/remotes/jaeger"
-	"github.com/opentracing/opentracing-go"
 )
 
 type Instrumented struct {
@@ -18,6 +19,6 @@ func New(name string) Instrumented {
 	}
 }
 
-func (s *Instrumented) SpanTrace(ctx context.Context, name string, tags map[string]any) (context.Context, opentracing.Span) {
+func (s *Instrumented) SpanTrace(ctx context.Context, name string, tags map[string]any) (context.Context, trace.Span) {
 	return jaeger.SpanTrace(ctx, fmt.Sprintf("%s.%s", s.SpanName, name), tags)
 }

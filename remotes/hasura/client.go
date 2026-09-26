@@ -57,14 +57,14 @@ func (h *hasura) tags(method, query string) map[string]any {
 // Perform queries, to retrieve data from database.
 func (h *hasura) Query(ctx context.Context, query string, vars *Variables) (*QueryResult, error) {
 	_, span := jaeger.SpanTrace(ctx, "hasura.query", h.tags("query", query))
-	defer span.Finish()
+	defer span.End()
 	return h.run(query, vars)
 }
 
 // Perform mutations to change database state.
 func (h *hasura) Mutate(ctx context.Context, mutation string, vars *Variables) (*QueryResult, error) {
 	_, span := jaeger.SpanTrace(ctx, "hasura.mutation", h.tags("query", mutation))
-	defer span.Finish()
+	defer span.End()
 	return h.run(mutation, vars)
 }
 
