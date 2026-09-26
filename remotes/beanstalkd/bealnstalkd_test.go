@@ -1,13 +1,23 @@
+//go:build integration
+
 package beanstalkd
 
 import (
+	"os"
 	"testing"
 
 	c "github.com/joaopandolfi/blackwhale/configurations"
 )
 
+func testURL() string {
+	if v := os.Getenv("BEANSTALKD_URL"); v != "" {
+		return v
+	}
+	return "127.0.0.1:11300"
+}
+
 func Test_putdata(t *testing.T) {
-	c.Configuration = c.Configurations{BeanstalkdUrl: "localhost:11300"}
+	c.Configuration = c.Configurations{BeanstalkdUrl: testURL()}
 	b, err := New()
 	if err != nil {
 		t.Errorf("Creating beanstalkd: %v", err)
@@ -20,7 +30,7 @@ func Test_putdata(t *testing.T) {
 }
 
 func Test_readdata(t *testing.T) {
-	c.Configuration = c.Configurations{BeanstalkdUrl: "localhost:11300"}
+	c.Configuration = c.Configurations{BeanstalkdUrl: testURL()}
 	b, err := New()
 	if err != nil {
 		t.Errorf("Creating beanstalkd: %v", err)

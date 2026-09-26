@@ -1,15 +1,23 @@
+//go:build integration
+
 package rabbitmq
 
 import (
+	"os"
 	"testing"
 
 	c "github.com/joaopandolfi/blackwhale/configurations"
 )
 
-const testUrl = "amqp://guest:guest@10.0.0.2:5672/"
+func testURL() string {
+	if v := os.Getenv("RABBITMQ_URL"); v != "" {
+		return v
+	}
+	return "amqp://guest:guest@127.0.0.1:5672/"
+}
 
 func Test_putdata(t *testing.T) {
-	c.Configuration = c.Configurations{RabbitMQURL: testUrl}
+	c.Configuration = c.Configurations{RabbitMQURL: testURL()}
 	d, err := New()
 	if err != nil {
 		t.Errorf("creating rabbitMQ driver: %v", err)
@@ -23,7 +31,7 @@ func Test_putdata(t *testing.T) {
 }
 
 func Test_readdata(t *testing.T) {
-	c.Configuration = c.Configurations{RabbitMQURL: testUrl}
+	c.Configuration = c.Configurations{RabbitMQURL: testURL()}
 	d, err := New()
 	if err != nil {
 		t.Errorf("creating rabbitMQ driver: %v", err)

@@ -1,16 +1,26 @@
+//go:build integration
+
 package v2
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"gopkg.in/mgo.v2/bson"
 )
 
-const _host = "10.0.0.2"
-const _port = "27017"
-const _database = "black_whale_test"
+var _host = envOr("MONGO_HOST", "127.0.0.1")
+var _port = envOr("MONGO_PORT", "27017")
+var _database = envOr("MONGO_DATABASE", "black_whale_test")
+
+func envOr(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
+}
 
 func Test_Connection(t *testing.T) {
 	url := MountURL("", "", _host, _port)
