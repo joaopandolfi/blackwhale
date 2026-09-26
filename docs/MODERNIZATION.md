@@ -14,9 +14,12 @@ A hipótese ("muita coisa desatualizada + documentação ruim") está **confirma
 1. Regressão de segredos do WIP revertida (§1.1);
 2. **Build break existente em HEAD corrigido** — `remotes/sqldriver` chamava `gosqljson.QueryDbTo*`, API que **não existe** na única versão do pacote (pseudo-version 2023-04, repo sem tags); adaptado para `QueryToMaps`/`QueryToArrays` mantendo a API pública (`theCase string`);
 3. Struct tags inválidos `json:'id'` (aspas simples → claims JWT serializados com nome errado) corrigidos em `remotes/jwt/entities.go` e `utils/crypt.go` (flag do `go vet`);
-4. `net.Dial` com formato IPv6 quebrado em `remotes/graphite/driver.go` → `net.JoinHostPort`.
+4. `net.Dial` com formato IPv6 quebrado em `remotes/graphite/driver.go` → `net.JoinHostPort`;
+5. **Bug de race em `cron/cron.go` corrigido** — jobs ephemerais só disparavam se um tick caísse no buffer durante o `time.Sleep(tick)` (ticker parado antes do loop) → o job podia **nunca** rodar (era o flake dos testes `TestEphemeralJobs`/`TestLambda`, reproduzível também no `master`). Fix: drenar o ticker + `eval <- time.Now()` determinístico.
 
-Infra de QA criada em sessão paralela (ainda untracked): `.github/workflows/ci.yml` (3 jobs: unit/lint/integration), `.golangci.yml` (v2, conservador), `docker-compose.integration.yml`, `.gitignore`.
+Infra de QA criada em sessão paralela e já commitada: `.github/workflows/ci.yml` (3 jobs: unit/lint/integration), `.golangci.yml` (v2, conservador), `docker-compose.integration.yml`, `.gitignore`.
+
+**Todo o trabalho está na branch `modernization`** (12 commits, `master` intocado): higiene, fixes de build/vet, testes, infra QA, `go 1.26`, Makefile. Suite unitária **100% verde** (vet+build+test).
 
 ---
 
@@ -99,6 +102,7 @@ Isso **quebra o propósito de segredo configurável** e é exatamente o anti-pad
 - **13 `panic(` ativos em código de biblioteca** (mongo, pubsub, jaeger, cache, configurations, dao).
 - **Idioms modernos não adotados:** `interface{}` 164× / `any` 0×; `chan bool` 18×; `ioutil` em 2 arquivos.
 - **`context` descartado:** `remotes/mongo/v2/client.go:27,44,75,77,89` substitui o ctx recebido por `context.TODO()`.
+- **Bug de API (pendente, Fase 4):** `remotes/jaeger.Init(service)` **ignora o parâmetro** `service` e lê só `JAEGER_SERVICE_NAME` do env — o teste precisou de `t.Setenv` (mitigado; correção real junto da migração p/ OpenTelemetry).
 
 ### 3.3 Segurança ⚠️
 
@@ -137,12 +141,12 @@ Sequenciado p/ reduzir risco: primeiro o que habilita o resto, depois segurança
 7. ✅ **Build break de HEAD corrigido** (`remotes/sqldriver` × gosqljson) + struct tags inválidas (vet) + dial IPv6 (graphite) — `go build`/`go vet`/test-compile verdes
 8. 🔲 Decisão: commitar o WIP revisado (só com pedido explícito)
 
-### Fase 1 — Infraestrutura de QA — **~70% done**
+### Fase 1 — Infraestrutura de QA — **~90% done**
 1. ✅ Tags `//go:build integration` + endpoints por env var (WIP)
-2. 🔲 `go.mod`: `go 1.26` (melhor prática p/ lib = N-1; hoje suporta-se 1.26/1.27) + `toolchain`
-3. ✅ `.golangci.yml` (formato v2, conservador: govet, ineffassign, staticcheck, unused + gofmt) — sessão paralela · 🔲 `Makefile` (build/vet/test/lint/coverage)
-4. ✅ GitHub Actions (`.github/workflows/ci.yml`, sessão paralela): 3 jobs — unit (vet+build+test), lint (golangci-lint v2, only-new-issues), integration (compose up + testes tagados)
-5. 🔲 **Primeiro tag semântico** (`v0.1.0` ou `v1.0.0`) — a partir daqui consumidores conseguem pinar
+2. ✅ `go.mod`: `go 1.26` (CI compatível: job unit usa `go-version-file`, lint pinado em 1.26)
+3. ✅ `.golangci.yml` (formato v2, conservador: govet, ineffassign, staticcheck, unused + gofmt) + `Makefile` (build/vet/test/lint/coverage/integration)
+4. ✅ GitHub Actions (`.github/workflows/ci.yml`): 3 jobs — unit (vet+build+test), lint (golangci-lint v2, only-new-issues), integration (compose up + testes tagados)
+5. 🔲 **Primeiro tag semântico** (`v1.x`) — quando a Fase 0–2 fechar (consumidores só conseguem pinar com tag)
 
 ### Fase 2 — Segurança (~1–2 dias, independente)
 1. 🔲 Tirar **todos** os defaults de segredo de `configurations.go` (carregar só de arquivo/Vault/env)
@@ -204,14 +208,19 @@ As fases 3–4 (API `net/http`-shaped, `context`, chi, dedup) **são breaking po
 
 Impacta todos os services consumidores — por isso o levantamento de consumidores (§5) vem antes.
 
+**✅ DECISÃO (2026-09-26): rota 1 — corte v2.** Fases 0–2 fecham na branch `modernization` com o module atual (linha v1, non-breaking); fases 3–6 vão para uma branch `v2` com module path `github.com/joaopandolfi/blackwhale/v2`, com janela de coexistência e `// Deprecated:` no v1. Dados p/ dimensionar a migração dos 18 consumidores: núcleo `utils` (15/18) + `configurations` (13/18) + `handlers` (10/18) + `remotes/mongo`/`remotes/request` (10/18); `handlers/conjson` (vendado) é API direta de 3 projetos; `remotes/sqldriver` tem 1 consumidor.
+
 ---
 
 ## 7. Próximos passos imediatos
 
 1. ✅ Reverter a regressão de segredos em `configurations.go` (§1.1)
 2. ✅ Criar `.gitignore` e `docker-compose.integration.yml` (sessão paralela)
-3. ✅ Confirmar build (`go build ./...`), vet e compilação dos testes — **verdes**
-4. ✅ Preencher §5 (consumidores — 18 projetos)
-5. 🔲 Decidir: commitar o WIP revisado? (exige pedido explícito)
-6. 🔲 Escolher a rota de versionamento (§6)
-7. 🔲 Mapear a superfície de API usada por cada um dos 18 consumidores (pré-requisito p/ fases 3–4)
+3. ✅ Confirmar build (`go build ./...`), vet e compilação dos testes — **verdes** (suite unitária 100% verde, fixando o flake de `cron` e o panic do `jaeger`)
+4. ✅ Preencher §5 (consumidores — 18 projetos + superfície de API por consumidor)
+5. ✅ Commitar o WIP revisado — branch `modernization` (12 commits)
+6. ✅ Escolher a rota de versionamento: **corte v2** (§6)
+7. ✅ Bump `go 1.26` + `Makefile`
+8. 🔲 **Fase 2 (segurança):** remover defaults de segredo em `Load()` (signatures intactas — non-breaking p/ v1); LICENSE (escolher tipo); resolver `conjson` (license upstream × dependência real); JWT expirado do hasura
+9. 🔲 Tag semântico `v1.x` quando a Fase 0–2 fechar + abrir branch `v2` p/ fases 3–6 (module path `/v2`)
+10. 🔲 **`llms.md` na raiz** — deliverable final da branch (guia p/ agentes de IA: visão do projeto, comandos, convenções, gotchas)
