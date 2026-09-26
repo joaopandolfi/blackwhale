@@ -1,6 +1,6 @@
 module github.com/joaopandolfi/blackwhale
 
-go 1.23.2
+go 1.26
 
 require (
 	cloud.google.com/go/pubsub v1.45.1
