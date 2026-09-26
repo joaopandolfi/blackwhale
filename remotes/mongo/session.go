@@ -1,243 +1,123 @@
 package mongo
 
 import (
+	"context"
 	"crypto/tls"
-	"crypto/x509"
-	"log"
-	"net"
-	"os"
+	"fmt"
 	"strings"
 	"sync"
 
-	"fmt"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
 	"github.com/joaopandolfi/blackwhale/v2/configurations"
-	"github.com/joaopandolfi/blackwhale/v2/utils"
-	"gopkg.in/mgo.v2"
 )
 
-// Session exported struct
+// Session wraps a mongo-driver client
 type Session struct {
-	session *mgo.Session
+	client *mongo.Client
 }
 
-var session Session
-var pool []Session
-var looper int
-var mpos sync.RWMutex
-var mrec sync.RWMutex
+var (
+	clients map[string]*mongo.Client
+	mu      sync.RWMutex
+)
 
-var maxPool int = configurations.Configuration.MongoPool
-
-// NewSessionSsl -
-// Create session with ssl and ignore the validation cert (more common)
-func NewSessionSsl(mongoURL string) (s *mgo.Session, err error) {
-	if session.session == nil {
-		url := strings.Replace(mongoURL, "ssl=true", "", -1)
-		url = strings.Replace(url, "readPreference=secondaryPreferred", "", -1)
-		dialInfo, err := mgo.ParseURL(url)
-		if err != nil {
-			utils.CriticalError("[Mongo SSL] ERROR Url parsing", err)
-		}
-		//utils.Debug("[Mongo] - Before connection")
-		dialInfo.DialServer = func(addr *mgo.ServerAddr) (net.Conn, error) {
-			tlsConfig := &tls.Config{}
-			tlsConfig.InsecureSkipVerify = true
-			conn, err := tls.Dial("tcp", addr.String(), tlsConfig)
-			if err != nil {
-				utils.CriticalError("[Mongo SSL] ERROR SSL Connection ", err.Error(), addr.String())
-				log.Println(err)
-				panic(err)
-			}
-			return conn, err
-		}
-		s, err = mgo.DialWithInfo(dialInfo)
-
-		if err != nil {
-			return nil, err
-		}
-
-		//session.session.SetMode(mgo.SecondaryPreferred,true) // Unecessary
-	}
-	return s, err
-}
-
-// NewSessionSSLMETHOD2 -
-// Create session with ssl and use sign cert
-func NewSessionSSLMETHOD2(mongoURL string) (s *Session, err error) {
-	// --sslCAFile
-	rootCerts := x509.NewCertPool()
-	if ca, err := os.ReadFile("ca.crt"); err == nil {
-		rootCerts.AppendCertsFromPEM(ca)
+func connect(mongoURL string) (*mongo.Client, error) {
+	url := strings.ReplaceAll(mongoURL, "ssl=true", "tls=true")
+	opts := options.Client().ApplyURI(url)
+	if strings.Contains(url, "tls=true") {
+		opts.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	}
 
-	// --sslPEMKeyFile
-	clientCerts := []tls.Certificate{}
-	if cert, err := tls.LoadX509KeyPair("client.crt", "client.key"); err == nil {
-		clientCerts = append(clientCerts, cert)
-	}
-
-	// Dial with TLS
-	sess, err := mgo.DialWithInfo(&mgo.DialInfo{
-		Addrs: []string{mongoURL},
-		DialServer: func(addr *mgo.ServerAddr) (net.Conn, error) {
-			return tls.Dial("tcp", addr.String(), &tls.Config{
-				RootCAs:      rootCerts,
-				Certificates: clientCerts,
-			})
-		},
-	})
-	session.session = sess
-
-	return &session, err
-}
-
-// Create session without ssl
-func newSession(mongoURL string) (s *mgo.Session, err error) {
-	se, err := mgo.Dial(mongoURL)
+	client, err := mongo.Connect(opts)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("connecting to mongo: %w", err)
 	}
-	return se, err
+	return client, nil
 }
 
-// GetPoolSession - return session fom a pool or create a new if do not exists
+// GetPoolSession - return the shared session for the configured mongo url
 func GetPoolSession() (*Session, error) {
 	return GetCustomPoolSession(configurations.Configuration.MongoUrl)
 }
 
-// GetCustomPoolSession - return session fom a pool or create a new if do not exists based on mongoURL
+// GetCustomPoolSession - return the shared session for mongoURL
 func GetCustomPoolSession(mongoURL string) (*Session, error) {
-	var err error
-	lenPool := len(pool)
-	pos := 0
-
-	if lenPool <= maxPool {
-		mpos.Lock()
-		looper = lenPool
-		pos = looper
-		mpos.Unlock()
-
-		s, err := createMgoSession(mongoURL)
-
-		if err != nil {
-			return nil, err
-		}
-
-		pool = append(pool, Session{session: s})
-		return &pool[pos], nil
+	mu.RLock()
+	client, ok := clients[mongoURL]
+	mu.RUnlock()
+	if ok && client != nil {
+		return &Session{client: client}, nil
 	}
 
-	mpos.Lock()
-	if looper >= maxPool {
-		looper = 0
-	} else {
-		looper++
-	}
-	pos = looper
-	mpos.Unlock()
-
-	if pool[pos].Health() != nil {
-		mrec.Lock()
-		pool[pos].Close()
-		s, errr := createMgoSession(mongoURL)
-		err = errr
-		pool[pos] = Session{session: s}
-		mrec.Unlock()
+	mu.Lock()
+	defer mu.Unlock()
+	if client, ok := clients[mongoURL]; ok && client != nil {
+		return &Session{client: client}, nil
 	}
 
-	return &pool[pos], err
-}
-
-// FlushPull - clear the session pool
-func FlushPull() {
-	for _, p := range pool {
-		go p.Close()
-	}
-	pool = nil
-	looper = 0
-}
-
-func createMgoSession(mongoURL string) (*mgo.Session, error) {
-	if strings.Contains(mongoURL, "ssl=") {
-		return NewSessionSsl(mongoURL)
-	}
-	return newSession(mongoURL)
-}
-
-func NewSessionManual(url string) (s *Session, err error) {
-	se, err := mgo.Dial(url)
+	client, err := connect(mongoURL)
 	if err != nil {
 		return nil, err
 	}
-
-	return &Session{session: se}, err
+	clients[mongoURL] = client
+	return &Session{client: client}, nil
 }
 
-// NewSession - create a new session with ssl or not based on config mongourl
-// https://godoc.org/gopkg.in/mgo.v2#Dial
-func NewSession() (s *Session, err error) {
-	return NewCustomSession(configurations.Configuration.MongoUrl)
+// NewSession - return the shared session for the configured mongo url
+func NewSession() (*Session, error) {
+	return GetCustomPoolSession(configurations.Configuration.MongoUrl)
 }
 
-func NewCustomSessionFresh(mongoURL string) (s *Session, err error) {
-	sess := Session{}
-	if strings.Contains(mongoURL, "ssl=") {
-		sess.session, err = NewSessionSsl(mongoURL)
-	} else {
-		sess.session, err = newSession(mongoURL)
+// NewCustomSessionFresh - create a fresh session (not shared) for mongoURL
+func NewCustomSessionFresh(mongoURL string) (*Session, error) {
+	client, err := connect(mongoURL)
+	if err != nil {
+		return nil, err
 	}
-
-	return &sess, err
+	return &Session{client: client}, nil
 }
 
-// NewCustoSession - create a new session wuth ssl or not based on setted mongo url
-func NewCustomSession(mongoURL string) (s *Session, err error) {
-	if session.session == nil {
-		if strings.Contains(mongoURL, "ssl=") {
-			session.session, err = NewSessionSsl(mongoURL)
-		} else {
-			session.session, err = newSession(mongoURL)
-		}
-	}
-	return &session, err
-}
-
-// Copy session
 func (s *Session) Copy() *Session {
-	return &Session{s.session.Copy()}
+	return &Session{client: s.client}
 }
 
-// GetCollection return a specific collection
-// Get mongo collection
-func (s *Session) GetCollection(col string) *mgo.Collection {
-	return s.session.DB(configurations.Configuration.MongoDb).C(col)
+func (s *Session) GetCollection(col string) *mongo.Collection {
+	return s.client.Database(configurations.Configuration.MongoDb).Collection(col)
 }
 
-// GetCollectionOnDB return a specific collection on database
-// Get mongo collection
-func (s *Session) GetCollectionOnDB(db, col string) *mgo.Collection {
-	return s.session.DB(db).C(col)
+func (s *Session) GetCollectionOnDB(db, col string) *mongo.Collection {
+	return s.client.Database(db).Collection(col)
 }
 
-// Run arbitrary commando direct on mongo
 func (s *Session) Run(cmd any) {
-	var result any
-	s.session.DB(configurations.Configuration.MongoDb).Run(cmd, result) //.C(col)
+	var result bson.M
+	s.client.Database(configurations.Configuration.MongoDb).RunCommand(context.Background(), toOrderedCommand(cmd)).Decode(&result)
 	fmt.Println(result)
 }
 
-// Close session
+func toOrderedCommand(cmd any) any {
+	if m, ok := cmd.(map[string]any); ok {
+		d := make(bson.D, 0, len(m))
+		for k, v := range m {
+			d = append(d, bson.E{Key: k, Value: v})
+		}
+		return d
+	}
+	return cmd
+}
+
 func (s *Session) Close() {
-	if s.session != nil {
-		s.session.Close()
+	if s.client != nil {
+		s.client.Disconnect(context.Background())
 	}
 }
 
-// Health check sanity of connection
 func (s *Session) Health() error {
-	if s.session != nil {
-		return s.session.Ping()
+	if s.client == nil {
+		return fmt.Errorf("checking health: session is nil")
 	}
-	return fmt.Errorf("checking health: session is nill")
+	return s.client.Ping(context.Background(), nil)
 }

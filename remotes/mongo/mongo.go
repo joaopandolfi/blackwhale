@@ -1,74 +1,74 @@
 package mongo
 
 import (
+	"context"
+
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
+
 	"github.com/joaopandolfi/blackwhale/v2/utils"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
-// Index -
-type Index struct {
-	N   int    `json:"n"`
-	Key string `json:"key"`
+type counterDoc struct {
+	N   int    `bson:"n" json:"n"`
+	Key string `bson:"key" json:"key"`
 }
 
-// GetSession - return session from a pool
+// GetSession - return the shared session for the configured mongo url
 func GetSession() *Session {
-	session, err := GetPoolSession() //NewSession()
-	//session, err := NewSession()
+	session, err := GetPoolSession()
 	if err != nil {
 		utils.CriticalError("Unable to connect on mongo: %s", err)
-		FlushPull()
+		Close()
 		panic(err)
 	}
 	return session
 }
 
-// GenericInsert - insert new item on database
-func GenericInsert(collection string, data any) error {
-	session := GetSession()
-	return session.GetCollection(collection).Insert(&data)
-}
-
-// Run specific command
-func Run(cmd any) {
-	session := GetSession()
-	session.Run(cmd)
-}
-
-// CreateIndex create index on collection and key
+// CreateIndex create a compound ascending index on collection
 func CreateIndex(collection string, keys ...string) error {
 	session := GetSession()
 	col := session.GetCollection(collection)
-	col.EnsureIndexKey(keys...)
-	return nil
+
+	indexKeys := bson.D{}
+	for _, k := range keys {
+		indexKeys = append(indexKeys, bson.E{Key: k, Value: 1})
+	}
+	_, err := col.Indexes().CreateOne(context.Background(), mongo.IndexModel{Keys: indexKeys})
+	return err
 }
 
 // GetNextID returns next incremental id
 func GetNextID(key string) (id int) {
 	session := GetSession()
 	col := session.GetCollection("whale_counter")
+	ctx := context.Background()
 
-	var doc Index
-	change := mgo.Change{
-		Update:    bson.M{"$inc": bson.M{"n": 1}},
-		ReturnNew: true,
-	}
-	_, err := col.Find(bson.M{"key": key}).Apply(change, &doc)
+	var doc counterDoc
+	err := col.FindOneAndUpdate(ctx,
+		bson.M{"key": key},
+		bson.M{"$inc": bson.M{"n": 1}},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
+	).Decode(&doc)
 	if err != nil {
-		err = col.Insert(bson.M{"key": key, "n": 0})
-		if err != nil {
-			utils.CriticalError("[Mongo][GetNextID] - Error on get Next ID", err)
-			FlushPull()
-			panic(err)
+		_, iErr := col.InsertOne(ctx, bson.M{"key": key, "n": 0})
+		if iErr != nil {
+			utils.CriticalError("[Mongo][GetNextID] - Error on get Next ID", iErr)
+			Close()
+			panic(iErr)
 		}
-		doc.N = 0
+		return 0
 	}
-	id = doc.N
-	return
+	return doc.N
 }
 
 // Close all connections
 func Close() {
-	FlushPull()
+	mu.Lock()
+	defer mu.Unlock()
+	for url, client := range clients {
+		client.Disconnect(context.Background())
+		delete(clients, url)
+	}
 }

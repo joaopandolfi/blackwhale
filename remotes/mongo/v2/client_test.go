@@ -7,8 +7,8 @@ import (
 	"os"
 	"testing"
 
-	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
 	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
 )
 
 var _host = envOr("MONGO_HOST", "127.0.0.1")

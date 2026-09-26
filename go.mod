@@ -25,7 +25,6 @@ require (
 	github.com/unrolled/secure v1.17.0
 	go.mongodb.org/mongo-driver/v2 v2.9.1
 	golang.org/x/crypto v0.57.0
-	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 	gorm.io/gorm v1.25.12
 )
 
