@@ -1,3 +1,5 @@
+> **Vendored copy** of [Rican7/conjson](https://github.com/Rican7/conjson) — MIT License, see [LICENSE](LICENSE).
+
 # conjson
 
 [![Build Status](https://travis-ci.com/Rican7/conjson.svg?branch=master)](https://travis-ci.com/Rican7/conjson)
