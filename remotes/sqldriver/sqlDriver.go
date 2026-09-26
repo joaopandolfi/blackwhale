@@ -37,7 +37,6 @@ func (cc *SqlDriver) Init(driverName string, url string) {
 
 	if err != nil {
 		utils.CriticalError("[SQL]- Erro ao conectar o driver "+cc.DriverName, err)
-		//panic(err)
 	}
 }
 
@@ -73,7 +72,6 @@ func (cc SqlDriver) RenewConnection() (err error) {
 
 	if err != nil {
 		utils.CriticalError("[SQL]- Erro ao conectar o driver "+cc.DriverName, err)
-		//panic(err)
 	}
 	return
 }
@@ -83,7 +81,6 @@ func (cc SqlDriver) ForceRequest() (err error) {
 	err = cc.Execute("lower", nil, "SET FOREIGN_KEY_CHECKS=0;")
 	if err != nil {
 		utils.Error(fmt.Sprintf("[SQLDriver][%s]- Error on FORCE REQUEST", cc.DriverName), err)
-		//panic(err)
 	}
 	return
 }
@@ -94,7 +91,6 @@ func (cc SqlDriver) Execute(theCase string, output any, sqlStatement string, sql
 	data, err := gosqljson.QueryToMaps(cc.Database, toCase(theCase), sqlStatement, sqlParams...)
 	if err != nil {
 		utils.Error(fmt.Sprintf("[SQLDriver][%s]- Error on execute query", cc.DriverName), err)
-		//panic(err)
 		return
 	}
 
@@ -157,7 +153,6 @@ func (cc SqlDriver) ExecuteToArray(theCase string, sqlStatement string, sqlParam
 
 	if err != nil {
 		utils.Error(fmt.Sprintf("[SQLDriver][%s]- Error on Execute query to array", cc.DriverName), err)
-		//panic(err)
 		return
 	}
 
@@ -179,7 +174,6 @@ func (cc SqlDriver) QueryToMap(theCase string, sqlStatement string, sqlParams ..
 
 	if err != nil {
 		utils.Error(fmt.Sprintf("[SQLDriver][%s]- Error on query to map", cc.DriverName), err)
-		//panic(err)
 		return
 	}
 
