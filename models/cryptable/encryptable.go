@@ -11,7 +11,7 @@ var aesKey = configurations.Configuration.Security.AESKEY
 
 // Encryptable - public struct to implement sanitization by criptography
 type Encryptable struct {
-	Crypted bool `json:"Crypted"`
+	Crypted bool
 }
 
 // SetAesKey to crypt

@@ -1,0 +1,40 @@
+# Binaries
+/blackwhale
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries and artifacts
+*.test
+*.out
+
+# Go workspace files
+go.work
+go.work.sum
+
+# Vendor directory (if dependencies are vendored)
+vendor/
+
+# Compressed/package files
+*.zip
+*.tar.gz
+*.tgz
+
+# macOS
+.DS_Store
+._*
+
+# Swap files
+*.swp
+*.swo
+*~
+
+# Editors and IDEs
+.idea/
+.vscode/
+*.iml
+
+# Local dev tool state
+.yolo.json
