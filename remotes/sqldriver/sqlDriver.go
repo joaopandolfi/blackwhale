@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/elgs/gosqljson"
@@ -90,14 +91,20 @@ func (cc SqlDriver) ForceRequest() (err error) {
 // Execute method is used for execute a SQL
 func (cc SqlDriver) Execute(theCase string, output interface{}, sqlStatement string, sqlParams ...interface{}) (err error) {
 	cc.getDB()
-	data, err := gosqljson.QueryDbToMapJSON(cc.Database, theCase, sqlStatement, sqlParams...)
+	data, err := gosqljson.QueryToMaps(cc.Database, toCase(theCase), sqlStatement, sqlParams...)
 	if err != nil {
 		utils.Error(fmt.Sprintf("[SQLDriver][%s]- Error on execute query", cc.DriverName), err)
 		//panic(err)
+		return
 	}
 
-	json.Unmarshal([]byte(data), &output)
-	return
+	b, mErr := json.Marshal(data)
+	if mErr != nil {
+		utils.Error(fmt.Sprintf("[SQLDriver][%s]- Error on marshal query", cc.DriverName), mErr)
+		return mErr
+	}
+
+	return json.Unmarshal(b, &output)
 }
 
 func (cc SqlDriver) Run(output interface{}, sqlStatement string, sqlParams ...interface{}) (err error) {
@@ -145,11 +152,21 @@ func (cc SqlDriver) ExecuteAndReturnLastId(sqlStatement string, sqlParams ...int
 // ExecuteToArray method is used for execute a SQL
 func (cc SqlDriver) ExecuteToArray(theCase string, sqlStatement string, sqlParams ...interface{}) (header []string, data [][]string, err error) {
 	cc.getDB()
-	header, data, err = gosqljson.QueryDbToArray(cc.Database, theCase, sqlStatement, sqlParams...)
+	var rows [][]any
+	header, rows, err = gosqljson.QueryToArrays(cc.Database, toCase(theCase), sqlStatement, sqlParams...)
 
 	if err != nil {
 		utils.Error(fmt.Sprintf("[SQLDriver][%s]- Error on Execute query to array", cc.DriverName), err)
 		//panic(err)
+		return
+	}
+
+	data = make([][]string, len(rows))
+	for i, row := range rows {
+		data[i] = make([]string, len(row))
+		for j, cell := range row {
+			data[i][j] = cellToString(cell)
+		}
 	}
 
 	return
@@ -157,14 +174,44 @@ func (cc SqlDriver) ExecuteToArray(theCase string, sqlStatement string, sqlParam
 
 func (cc SqlDriver) QueryToMap(theCase string, sqlStatement string, sqlParams ...interface{}) (data []map[string]string, err error) {
 	cc.getDB()
-	data, err = gosqljson.QueryDbToMap(cc.Database, theCase, sqlStatement, sqlParams...)
+	var rows []map[string]any
+	rows, err = gosqljson.QueryToMaps(cc.Database, toCase(theCase), sqlStatement, sqlParams...)
 
 	if err != nil {
 		utils.Error(fmt.Sprintf("[SQLDriver][%s]- Error on query to map", cc.DriverName), err)
 		//panic(err)
+		return
+	}
+
+	data = make([]map[string]string, len(rows))
+	for i, m := range rows {
+		data[i] = make(map[string]string, len(m))
+		for k, v := range m {
+			data[i][k] = cellToString(v)
+		}
 	}
 
 	return
+}
+
+func toCase(theCase string) int {
+	switch strings.ToLower(theCase) {
+	case "lower":
+		return gosqljson.Lower
+	case "upper":
+		return gosqljson.Upper
+	case "camel":
+		return gosqljson.Camel
+	default:
+		return gosqljson.AsIs
+	}
+}
+
+func cellToString(v any) string {
+	if b, ok := v.([]byte); ok {
+		return string(b)
+	}
+	return fmt.Sprintf("%v", v)
 }
 
 // QueryToJSON - return ditectly on byte array
