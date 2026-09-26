@@ -1,3 +1,4 @@
+// Package permissions provides permission check primitives.
 package permissions
 
 import "strings"

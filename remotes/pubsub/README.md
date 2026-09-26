@@ -1,5 +1,24 @@
 # Pubsub abstraction
 This is the pub/sub abstraction client to make more easy handle
+(Google Cloud Pub/Sub).
+
+## API
+
+```go
+// init once (needs GOOGLE_APPLICATION_CREDENTIALS)
+err := pubsub.Init(ctx, projectID)
+defer pubsub.Close()
+
+driver := pubsub.Get() // panics if Init was not called
+id, err := driver.Push("my-topic", data)
+
+ch := make(chan *pubsub.Message)
+err = driver.Subscribe("my-subscription", ch)
+for msg := range ch { ... }
+```
+
+`GetContract()` returns the same driver as the `DriverContract` interface
+(useful for tests; `NewMockedDriver` provides a fake).
 
 ## Setup
 1. You need to setup the env GOOGLE_APPLICATION_CREDENTIALS with the json path

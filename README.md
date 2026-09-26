@@ -117,8 +117,8 @@ Notes:
 | `remotes/mysql` | MySQL (database/sql) |
 | `remotes/postgresql` | PostgreSQL (database/sql) |
 | `remotes/prometheus` | Prometheus metrics + HTTP middleware |
-| `remotes/pubsub` | AMQP pub/sub (rabbitmq/amqp091-go) |
-| `remotes/rabbitmq` | RabbitMQ driver |
+| `remotes/pubsub` | Google Cloud Pub/Sub abstraction |
+| `remotes/rabbitmq` | RabbitMQ driver (rabbitmq/amqp091-go) |
 | `remotes/request` | HTTP client (with retries) |
 | `remotes/sqldriver` | SQL query helper (gosqljson) |
 

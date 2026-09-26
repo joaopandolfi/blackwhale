@@ -1,3 +1,4 @@
+// Package prometheus provides Prometheus metrics and an HTTP middleware that labels requests by route.
 package prometheus
 
 import (

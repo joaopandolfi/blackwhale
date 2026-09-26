@@ -1,3 +1,4 @@
+// Package compressible provides transparent gzip-compressible struct fields.
 package compressible
 
 import (

@@ -1,3 +1,4 @@
+// Package instrumentable provides span-name helpers for tracing.
 package instrumentable
 
 import (

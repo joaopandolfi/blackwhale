@@ -1,3 +1,4 @@
+// Package cron provides cron job scheduling, including ephemeral one-shot jobs.
 package cron
 
 import (

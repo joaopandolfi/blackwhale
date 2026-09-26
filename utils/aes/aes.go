@@ -1,3 +1,4 @@
+// Package aes provides AES encryption helpers.
 package aes
 
 import (
