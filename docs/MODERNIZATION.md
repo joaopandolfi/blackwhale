@@ -146,7 +146,7 @@ Sequenciado p/ reduzir risco: primeiro o que habilita o resto, depois segurança
 2. ✅ `go.mod`: `go 1.26` (CI compatível: job unit usa `go-version-file`, lint pinado em 1.26)
 3. ✅ `.golangci.yml` (formato v2, conservador: govet, ineffassign, staticcheck, unused + gofmt) + `Makefile` (build/vet/test/lint/coverage/integration)
 4. ✅ GitHub Actions (`.github/workflows/ci.yml`): 3 jobs — unit (vet+build+test), lint (golangci-lint v2, only-new-issues), integration (compose up + testes tagados)
-5. 🔲 **Primeiro tag semântico** (`v1.x`) — quando a Fase 0–2 fechar (consumidores só conseguem pinar com tag)
+5. ✅ Tag da linha v1 — **descoberta no fim da Fase 2**: o repo já tinha 100+ tags (`v0.1.3`…`v1.8.3`), então o "primeiro tag semântico" deste plano era pré-descoberta. Estado moderno tagado como **`v1.9.0`** (minor bump: segredos via env, CI, go 1.26 — non-breaking)
 
 ### Fase 2 — Segurança — **fechada (só resta rotação, ação externa)**
 1. ✅ Tirar defaults de segredo de `configurations.go` → env vars (`MYSQL_USER`, `MYSQL_PASSWORD`, `RESET_HASH`, `BCRYPT_SECRET`, `SESSION_SECRET`)
@@ -222,5 +222,5 @@ Impacta todos os services consumidores — por isso o levantamento de consumidor
 6. ✅ Escolher a rota de versionamento: **corte v2** (§6)
 7. ✅ Bump `go 1.26` + `Makefile`
 8. ✅ **Fase 2 (segurança):** segredos → env, LICENSE MIT, atribuição do conjson, JWT do hasura — só resta rotação de expostos (ação do mantenedor)
-9. 🔲 Tag semântico `v1.0.0` na branch `modernization` + abrir branch `v2` (module path `/v2`) p/ fases 3–6
+9. ✅ Tag `v1.9.0` na branch `modernization` (linha v1 fechada; repo já tinha tags até `v1.8.3`) + branch `v2` (module path `/v2`) p/ fases 3–6
 10. 🔲 **`llms.md` na raiz** — deliverable final da branch (guia p/ agentes de IA: visão do projeto, comandos, convenções, gotchas)
