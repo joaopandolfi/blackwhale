@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	"github.com/joaopandolfi/blackwhale/v2/configurations"
 	"github.com/joaopandolfi/blackwhale/v2/utils"
 )
