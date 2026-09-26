@@ -22,17 +22,17 @@ func RunLimited(
 
 	var payload any
 	timer := time.NewTimer(interval)
-	tick := make(chan bool, 2)
+	tick := make(chan struct{}, 2)
 	for {
 		select {
 		case payload = <-input:
 			timer.Reset(interval)
 			if increaseCounter(id) >= limit {
 				timer.Stop()
-				tick <- true
+				tick <- struct{}{}
 			}
 		case <-timer.C:
-			tick <- true
+			tick <- struct{}{}
 		case <-tick:
 			go callback(payload)
 			if !silent {

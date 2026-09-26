@@ -5,10 +5,10 @@ import "time"
 type mockedDriver struct {
 	message *Message
 	ticker  time.Ticker
-	stop    chan bool
+	stop    chan struct{}
 }
 
-func NewMockedDriver(ticker time.Ticker, stop chan bool, mockedMessage *Message) DriverContract {
+func NewMockedDriver(ticker time.Ticker, stop chan struct{}, mockedMessage *Message) DriverContract {
 	return &mockedDriver{
 		message: mockedMessage,
 		ticker:  ticker,

@@ -14,7 +14,7 @@ type cacheInjectable interface {
 func lateInitCache(c cacheInjectable) {
 	if err := recover(); err != nil {
 		utils.Debug("[CACHE][Async loading] waiting for ready cache signal")
-		wait := make(chan bool, 1)
+		wait := make(chan struct{}, 1)
 		AddInitializedListenner(wait)
 		go func() {
 			ticker := time.NewTicker(time.Second * 40)

@@ -10,9 +10,9 @@ const MAX_BUFF_SIZE = 150
 
 var cacheInstance Cache
 
-var InitializedChan chan bool = make(chan bool, 2)
+var InitializedChan chan struct{} = make(chan struct{}, 2)
 
-var waitListenners []chan bool
+var waitListenners []chan struct{}
 
 type Cache interface {
 	Put(key string, data any, duration time.Duration) error
@@ -33,17 +33,17 @@ func Initialize(tick time.Duration) Cache {
 	return cacheInstance
 }
 
-func AddInitializedListenner(l chan bool) {
+func AddInitializedListenner(l chan struct{}) {
 	if waitListenners == nil {
-		waitListenners = []chan bool{}
+		waitListenners = []chan struct{}{}
 	}
 	waitListenners = append(waitListenners, l)
 }
 
 func initialized() {
-	InitializedChan <- true
+	InitializedChan <- struct{}{}
 	for _, c := range waitListenners {
-		c <- true
+		c <- struct{}{}
 	}
 	waitListenners = nil
 }

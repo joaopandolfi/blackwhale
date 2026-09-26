@@ -17,15 +17,15 @@ type work struct {
 	active    bool
 	ephemeral bool
 	hotStart  bool
-	stop      chan bool
+	stop      chan struct{}
 }
 
 type cron struct {
 	jobs          map[string]*work
 	mu            sync.Mutex
 	onlineWorkers int
-	stopCh        chan bool
-	endCh         chan bool
+	stopCh        chan struct{}
+	endCh         chan struct{}
 	errCh         chan error
 }
 
@@ -53,7 +53,7 @@ func (c *cron) addJob(key string, tick time.Duration, ephemeral, hotStart bool, 
 		active:    true,
 		hotStart:  hotStart,
 		ephemeral: ephemeral,
-		stop:      make(chan bool),
+		stop:      make(chan struct{}),
 	}
 
 	return nil
@@ -93,14 +93,14 @@ func (c *cron) StopJob(key string) error {
 		return fmt.Errorf("job (%s) does not exits", key)
 	}
 
-	c.jobs[key].stop <- true
+	c.jobs[key].stop <- struct{}{}
 
 	return nil
 }
 
 func (c *cron) Start() {
-	c.stopCh = make(chan bool)
-	c.endCh = make(chan bool)
+	c.stopCh = make(chan struct{})
+	c.endCh = make(chan struct{})
 	c.errCh = make(chan error, len(c.jobs))
 
 	for k, j := range c.jobs {
@@ -111,7 +111,7 @@ func (c *cron) Start() {
 }
 
 func (c *cron) GracefullShutdown() error {
-	c.stopCh <- true
+	c.stopCh <- struct{}{}
 	<-c.endCh
 	return nil
 }
@@ -130,7 +130,7 @@ func (c *cron) errorHandler() {
 	}
 }
 
-func (c *cron) worker(key string, stop chan bool, tick time.Duration, ephemeral, hotStart bool, job Job) {
+func (c *cron) worker(key string, stop chan struct{}, tick time.Duration, ephemeral, hotStart bool, job Job) {
 	c.workerStarted()
 	ticker := time.NewTicker(tick)
 	defer ticker.Stop()
@@ -206,9 +206,9 @@ func (c *cron) workerStopped(key string) {
 func (c *cron) stopPropagate() {
 	c.onlineWorkers--
 	if c.onlineWorkers <= 0 {
-		c.endCh <- true
+		c.endCh <- struct{}{}
 		return
 	}
 	time.Sleep(5 * time.Millisecond)
-	c.stopCh <- true
+	c.stopCh <- struct{}{}
 }

@@ -13,9 +13,9 @@ var mcache *memCache
 
 type memCache struct {
 	buff               map[string]*stored
-	garbageStop        chan bool
+	garbageStop        chan struct{}
 	mu                 sync.RWMutex
-	garbageInitialized chan bool
+	garbageInitialized chan struct{}
 }
 
 func GetMemory() Cache {
@@ -27,7 +27,7 @@ func initializeMemory(tick time.Duration) Cache {
 		utils.Info("[CACHE] using local cache", "Memory")
 		mcache = &memCache{
 			buff:               map[string]*stored{},
-			garbageInitialized: make(chan bool, 1),
+			garbageInitialized: make(chan struct{}, 1),
 		}
 
 		mcache.startGarbageCollector(tick)
@@ -88,11 +88,11 @@ func (c *memCache) Size() int {
 
 func (c *memCache) startGarbageCollector(tick time.Duration) {
 	ticker := time.NewTicker(tick)
-	c.garbageStop = make(chan bool)
+	c.garbageStop = make(chan struct{})
 
 	go func() {
 		utils.Info("[LOCAL_CACHE][GARBAGE COLLECTOR]", "START", tick.Seconds())
-		c.garbageInitialized <- true
+		c.garbageInitialized <- struct{}{}
 		for {
 			select {
 			case <-c.garbageStop:
@@ -123,6 +123,6 @@ func (c *memCache) GarbageCollector() {
 
 func (c *memCache) GracefullShutdown() {
 	if c.garbageStop != nil {
-		c.garbageStop <- true
+		c.garbageStop <- struct{}{}
 	}
 }
