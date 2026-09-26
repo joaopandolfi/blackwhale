@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"fmt"
+	"log"
 
 	"github.com/pkg/errors"
 )
@@ -21,7 +22,7 @@ var defaultTimeout time.Duration = time.Minute * 10
 func getTransport() *http.Transport {
 	if transport == nil {
 		transport = &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			TLSClientConfig: &tls.Config{},
 		}
 		http.DefaultClient.Timeout = defaultTimeout
 	}
@@ -39,21 +40,21 @@ func Get(url string) (body []byte) {
 	resp, err := client.Get(url)
 
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("%v", err)
 		return
 	}
 
 	defer func() {
 		resp.Body.Close()
 		if r := recover(); r != nil {
-			fmt.Println("Error on", r)
+			log.Printf("Error on %v", r)
 		}
 	}()
 
 	body, err = io.ReadAll(resp.Body)
 
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("%v", err)
 	}
 
 	return
@@ -158,7 +159,7 @@ func Post(url string, data []byte) (body []byte, err error) {
 	defer func() {
 		resp.Body.Close()
 		if r := recover(); r != nil {
-			fmt.Println("Error on HTTP POST", r)
+			log.Printf("Error on HTTP POST %v", r)
 		}
 	}()
 
