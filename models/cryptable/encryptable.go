@@ -7,7 +7,7 @@ import (
 	"github.com/joaopandolfi/blackwhale/v2/utils/aes"
 )
 
-var aesKey = configurations.Configuration.Security.AESKEY
+var aesKeyOverride string
 
 // Encryptable - public struct to implement sanitization by criptography
 type Encryptable struct {
@@ -16,12 +16,19 @@ type Encryptable struct {
 
 // SetAesKey to crypt
 func SetAesKey(key string) {
-	aesKey = key
+	aesKeyOverride = key
+}
+
+func key() string {
+	if aesKeyOverride != "" {
+		return aesKeyOverride
+	}
+	return configurations.Configuration.Security.AESKEY
 }
 
 // encrypt received value
 func Encrypt(val string) (string, error) {
-	encVal, err := aes.Encrypt(aesKey, val)
+	encVal, err := aes.Encrypt(key(), val)
 	if err != nil {
 		return "", fmt.Errorf("encrypting: %w", err)
 	}
@@ -29,7 +36,7 @@ func Encrypt(val string) (string, error) {
 }
 
 func Decrypt(val string) (string, error) {
-	encVal, err := aes.Decrypt(aesKey, val)
+	encVal, err := aes.Decrypt(key(), val)
 	if err != nil {
 		return "", fmt.Errorf("restoring: %v", err)
 	}
@@ -43,7 +50,7 @@ func (m *Encryptable) Encrypt(vals []*string) error {
 	}
 
 	for i, val := range vals {
-		encVal, err := aes.Encrypt(aesKey, *val)
+		encVal, err := aes.Encrypt(key(), *val)
 		if err != nil {
 			return fmt.Errorf("encrypting %d: %v", i, err)
 		}
@@ -59,7 +66,7 @@ func (m *Encryptable) Restore(vals []*string) error {
 	}
 
 	for i, val := range vals {
-		encVal, err := aes.Decrypt(aesKey, *val)
+		encVal, err := aes.Decrypt(key(), *val)
 		if err != nil {
 			return fmt.Errorf("restoring %v", err)
 		}
