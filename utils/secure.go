@@ -5,7 +5,7 @@ import (
 	"reflect"
 )
 
-func ScapeHTML(value reflect.Value){
+func ScapeHTML(value reflect.Value) {
 
 	// loop over the struct
 	for i := 0; i < value.NumField(); i++ {

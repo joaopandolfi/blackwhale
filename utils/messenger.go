@@ -10,11 +10,11 @@ import (
 )
 
 type DbgMessage struct {
-	Level    string      `json:"level"`
-	Datetime string      `json:"datetime"`
-	Service  string      `json:"service"`
-	Message  string      `json:"message"`
-	Context  any `json:"context"`
+	Level    string `json:"level"`
+	Datetime string `json:"datetime"`
+	Service  string `json:"service"`
+	Message  string `json:"message"`
+	Context  any    `json:"context"`
 }
 
 // Payload to send Attachment on slack

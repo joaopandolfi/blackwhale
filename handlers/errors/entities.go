@@ -2,10 +2,10 @@ package errors
 
 // TypedError is used to send to interface errors with code
 type TypedError struct {
-	Code    int         `json:"code"`
-	Message string      `json:"message,omitempty"`
-	Stack   any `json:"stack,omitempty"`
-	Success bool        `json:"success"`
+	Code    int    `json:"code"`
+	Message string `json:"message,omitempty"`
+	Stack   any    `json:"stack,omitempty"`
+	Success bool   `json:"success"`
 }
 
 // NewTypedError constructor
@@ -22,7 +22,7 @@ func NewTypedError(code int, message string, stack error) *TypedError {
 	}
 }
 
-//AppError -
+// AppError -
 type AppError struct { //nolint
 	HTTPCode int    `json:"-"`
 	Code     string `json:"errCode"`

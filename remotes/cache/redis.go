@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/redis/go-redis/v9"
 	"github.com/joaopandolfi/blackwhale/v2/configurations"
 	"github.com/joaopandolfi/blackwhale/v2/utils"
+	"github.com/redis/go-redis/v9"
 )
 
 var rcache *redisCache
