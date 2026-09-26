@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type Client struct {
@@ -27,7 +27,7 @@ func New(url string, ctx context.Context) (*Client, error) {
 		ctx = context.TODO()
 	}
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(url))
+	client, err := mongo.Connect(options.Client().ApplyURI(url))
 	if err != nil {
 		return nil, fmt.Errorf("connecting to mongo: %w", err)
 	}
