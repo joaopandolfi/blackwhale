@@ -3,9 +3,9 @@ package mongo
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"io/ioutil"
 	"log"
 	"net"
+	"os"
 	"strings"
 	"sync"
 
@@ -67,7 +67,7 @@ func NewSessionSsl(mongoURL string) (s *mgo.Session, err error) {
 func NewSessionSSLMETHOD2(mongoURL string) (s *Session, err error) {
 	// --sslCAFile
 	rootCerts := x509.NewCertPool()
-	if ca, err := ioutil.ReadFile("ca.crt"); err == nil {
+	if ca, err := os.ReadFile("ca.crt"); err == nil {
 		rootCerts.AppendCertsFromPEM(ca)
 	}
 
@@ -221,8 +221,8 @@ func (s *Session) GetCollectionOnDB(db, col string) *mgo.Collection {
 }
 
 // Run arbitrary commando direct on mongo
-func (s *Session) Run(cmd interface{}) {
-	var result interface{}
+func (s *Session) Run(cmd any) {
+	var result any
 	s.session.DB(configurations.Configuration.MongoDb).Run(cmd, result) //.C(col)
 	fmt.Println(result)
 }

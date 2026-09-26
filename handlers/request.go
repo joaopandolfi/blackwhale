@@ -5,7 +5,6 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -28,13 +27,13 @@ var keyMatchRegex = regexp.MustCompile(`\"(\w+)\":`)
 var wordBarrierRegex = regexp.MustCompile(`([a-z_0-9])([A-Z])`)
 
 // marshaler
-var marshaler func(v interface{}) ([]byte, error) = json.Marshal
+var marshaler func(v any) ([]byte, error) = json.Marshal
 
 var activeZipOnResponse = false
 
 // ActiveSnakeCase default json encoder
 func ActiveSnakeCase() {
-	marshaler = func(v interface{}) ([]byte, error) {
+	marshaler = func(v any) ([]byte, error) {
 		marshaler := conjson.NewMarshaler(v, transform.ConventionalKeys())
 		return json.MarshalIndent(marshaler, "", " ")
 	}
@@ -69,13 +68,13 @@ func responseError(w http.ResponseWriter, message string) {
 
 // restResponseError - Private function to response in mode RES error
 func restResponseError(w http.ResponseWriter, message string) {
-	b, _ := json.Marshal(map[string]interface{}{"success": false, "message": message})
+	b, _ := json.Marshal(map[string]any{"success": false, "message": message})
 	writeError(w, b)
 }
 
 // RESTResponse - Make default REST API response
-func RESTResponse(w http.ResponseWriter, resp interface{}) {
-	Response(w, map[string]interface{}{"success": true, "data": resp}, http.StatusOK)
+func RESTResponse(w http.ResponseWriter, resp any) {
+	Response(w, map[string]any{"success": true, "data": resp}, http.StatusOK)
 }
 
 func ResponseTypedError(w http.ResponseWriter, code int, message string, stack error) {
@@ -91,12 +90,12 @@ func ResponseTypedErrorWithStatus(w http.ResponseWriter, statusCode, code int, m
 }
 
 // RESTResponseWithStatus - Make default REST API response with statuscode
-func RESTResponseWithStatus(w http.ResponseWriter, resp interface{}, status int) {
-	Response(w, map[string]interface{}{"success": true, "data": resp}, status)
+func RESTResponseWithStatus(w http.ResponseWriter, resp any, status int) {
+	Response(w, map[string]any{"success": true, "data": resp}, status)
 }
 
 // Response - Make default generic response
-func Response(w http.ResponseWriter, resp interface{}, status int) {
+func Response(w http.ResponseWriter, resp any, status int) {
 	// set Header
 	header(w)
 	b, err := marshaler(resp)
@@ -124,7 +123,7 @@ func Response(w http.ResponseWriter, resp interface{}, status int) {
 }
 
 // ResponseError - Make default generic response
-func ResponseError(w http.ResponseWriter, resp interface{}) {
+func ResponseError(w http.ResponseWriter, resp any) {
 	// set Header
 	header(w)
 	w.Header().Del("Content-Encoding")
@@ -134,7 +133,7 @@ func ResponseError(w http.ResponseWriter, resp interface{}) {
 }
 
 // RESTResponseError - Make REST API default response
-func RESTResponseError(w http.ResponseWriter, resp interface{}) {
+func RESTResponseError(w http.ResponseWriter, resp any) {
 	// set Header
 	header(w)
 	b, _ := marshaler(resp)
@@ -142,8 +141,8 @@ func RESTResponseError(w http.ResponseWriter, resp interface{}) {
 }
 
 // RESTResponseErrorData - Make REST API default response and put inside a data key
-func RESTResponseErrorData(w http.ResponseWriter, resp interface{}) {
-	Response(w, map[string]interface{}{"success": false, "data": resp}, http.StatusOK)
+func RESTResponseErrorData(w http.ResponseWriter, resp any) {
+	Response(w, map[string]any{"success": false, "data": resp}, http.StatusOK)
 }
 
 // Redirect - Redirect page
@@ -178,7 +177,7 @@ func GetQueryes(r *http.Request) url.Values {
 
 // GetBody - Return byte body data
 func GetBody(r *http.Request) ([]byte, error) {
-	return ioutil.ReadAll(r.Body)
+	return io.ReadAll(r.Body)
 }
 
 // GetForm - Return parsed form data
@@ -189,7 +188,7 @@ func GetForm(r *http.Request) (form url.Values, err error) {
 }
 
 // DecodeForm - Decoded parsed form data on interface
-func DecodeForm(dst interface{}, src map[string][]string) error {
+func DecodeForm(dst any, src map[string][]string) error {
 	decoder := schema.NewDecoder()
 	return decoder.Decode(dst, src)
 }
