@@ -8,13 +8,13 @@ import (
 )
 
 // JsonMarshal - Marshal struct to snake_case
-func JsonMarshal(v interface{}) ([]byte, error) {
+func JsonMarshal(v any) ([]byte, error) {
 	marshaler := conjson.NewMarshaler(v, transform.ConventionalKeys())
 	return json.MarshalIndent(marshaler, "", " ")
 }
 
 // JsonUnmarshal - Unmarshal json in snake_case to GolangStruct
-func JsonUnmarshal(b []byte, v interface{}) error {
+func JsonUnmarshal(b []byte, v any) error {
 	return json.Unmarshal(
 		b,
 		conjson.NewUnmarshaler(v, transform.ConventionalKeys()),

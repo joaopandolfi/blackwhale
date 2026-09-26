@@ -15,7 +15,7 @@ func TestDebounce(t *testing.T) {
 	channel := Channel(tag)
 	for i := 0; i < 2; i++ {
 		channel <- fmt.Sprintf("%s.%d", value, i)
-		Run(tag, time.Second*2, channel, func(payload interface{}) {
+		Run(tag, time.Second*2, channel, func(payload any) {
 			valueInputed := <-channel
 			assert.Equal(t, fmt.Sprintf("%s.1", value), valueInputed)
 		})

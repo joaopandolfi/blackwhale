@@ -18,6 +18,6 @@ func New(name string) Instrumented {
 	}
 }
 
-func (s *Instrumented) SpanTrace(ctx context.Context, name string, tags map[string]interface{}) (context.Context, opentracing.Span) {
+func (s *Instrumented) SpanTrace(ctx context.Context, name string, tags map[string]any) (context.Context, opentracing.Span) {
 	return jaeger.SpanTrace(ctx, fmt.Sprintf("%s.%s", s.SpanName, name), tags)
 }

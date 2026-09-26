@@ -11,7 +11,7 @@ var defaultValidator = validator.New()
 
 // UnmarshalSnakeCaseAndValidate -
 // Unmarshal payload using snake case and validade using default validator
-func UnmarshalSnakeCaseAndValidate(w http.ResponseWriter, r *http.Request, v interface{}) (string, error) {
+func UnmarshalSnakeCaseAndValidate(w http.ResponseWriter, r *http.Request, v any) (string, error) {
 
 	err := SnakeCaseDecoder(r.Body).Decode(v)
 	if err != nil {

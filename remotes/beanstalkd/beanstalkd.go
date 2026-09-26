@@ -65,7 +65,7 @@ func (d *Driver) ReadTube(tube string, timeout time.Duration) (uint64, []byte, e
 }
 
 // PutDefault - Put message on tube with default configs
-func (d *Driver) PutDefault(tube string, body interface{}) (uint64, error) {
+func (d *Driver) PutDefault(tube string, body any) (uint64, error) {
 	t := d.getDataTube(tube)
 	return Put(t, PRIORITY_NORMAL, 0, DURATION_DEFAULT, body)
 }
@@ -130,7 +130,7 @@ func TubeSet(conn *beanstalk.Conn, tube string) *beanstalk.TubeSet {
 }
 
 // Put - put some data on defined tube
-func Put(tube *beanstalk.Tube, priority uint32, delay, ttr time.Duration, body interface{}) (uint64, error) {
+func Put(tube *beanstalk.Tube, priority uint32, delay, ttr time.Duration, body any) (uint64, error) {
 	bbody, err := json.Marshal(body)
 	if err != nil {
 		return 0, fmt.Errorf("marshaling body to put on tube (%s): %w", tube.Name, err)

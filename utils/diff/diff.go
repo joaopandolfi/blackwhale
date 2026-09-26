@@ -10,16 +10,16 @@ import (
 
 // Diff structs tool
 // returns the b value
-func Diff(a, b interface{}) (map[string]interface{}, error) {
+func Diff(a, b any) (map[string]any, error) {
 	return diff(a, b, false)
 }
 
-func DiffIgnoreVoid(a, b interface{}) (map[string]interface{}, error) {
+func DiffIgnoreVoid(a, b any) (map[string]any, error) {
 	return diff(a, b, true)
 }
 
-func diff(a, b interface{}, igonoreVoid bool) (map[string]interface{}, error) {
-	var A, B, mdiff map[string]interface{}
+func diff(a, b any, igonoreVoid bool) (map[string]any, error) {
+	var A, B, mdiff map[string]any
 
 	if reflect.TypeOf(a) != reflect.TypeOf(b) {
 		return nil, fmt.Errorf("a and b need to be the same type: a (%v) b(%v)", reflect.TypeOf(a), reflect.TypeOf(b))
@@ -41,7 +41,7 @@ func diff(a, b interface{}, igonoreVoid bool) (map[string]interface{}, error) {
 
 	json.Unmarshal(sb, &B)
 
-	mdiff = map[string]interface{}{}
+	mdiff = map[string]any{}
 
 	for k := range A {
 		if reflect.ValueOf(B[k]).Kind() == reflect.Invalid || reflect.ValueOf(A[k]).Kind() == reflect.Invalid {
@@ -70,7 +70,7 @@ func diff(a, b interface{}, igonoreVoid bool) (map[string]interface{}, error) {
 	return mdiff, nil
 }
 
-func isVoid(v interface{}) bool {
+func isVoid(v any) bool {
 	switch reflect.TypeOf(v).Kind() {
 	case reflect.String:
 		vs := v.(string)
@@ -85,7 +85,7 @@ func isVoid(v interface{}) bool {
 	return false
 }
 
-func ExtractFromKeyMap(m map[string]interface{}, v interface{}) map[string]interface{} {
+func ExtractFromKeyMap(m map[string]any, v any) map[string]any {
 	keys := make([]string, 0, len(m))
 	for k := range m {
 		keys = append(keys, k)
@@ -94,9 +94,9 @@ func ExtractFromKeyMap(m map[string]interface{}, v interface{}) map[string]inter
 	return ExtractMap(keys, v)
 }
 
-func ExtractMap(keys []string, v interface{}) map[string]interface{} {
-	temp := map[string]interface{}{}
-	result := map[string]interface{}{}
+func ExtractMap(keys []string, v any) map[string]any {
+	temp := map[string]any{}
+	result := map[string]any{}
 
 	b, _ := snake_case.JsonMarshal(&v)
 	json.Unmarshal(b, &temp)

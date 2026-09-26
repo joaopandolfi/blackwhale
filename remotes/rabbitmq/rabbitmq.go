@@ -90,7 +90,7 @@ func (d *Driver) OpenQueue(tube string) error {
 	return nil
 }
 
-func (d *Driver) PutDefault(tube string, body interface{}) error {
+func (d *Driver) PutDefault(tube string, body any) error {
 	b, err := json.Marshal(&body)
 	if err != nil {
 		return fmt.Errorf("marshaling body: %w", err)

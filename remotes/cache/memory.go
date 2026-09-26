@@ -37,7 +37,7 @@ func initializeMemory(tick time.Duration) Cache {
 	return mcache
 }
 
-func (c *memCache) Put(key string, data interface{}, duration time.Duration) error {
+func (c *memCache) Put(key string, data any, duration time.Duration) error {
 	if len(c.buff) > MAX_BUFF_SIZE {
 		return fmt.Errorf("buffer overflow")
 	}
@@ -51,7 +51,7 @@ func (c *memCache) Put(key string, data interface{}, duration time.Duration) err
 	return nil
 }
 
-func (c *memCache) Get(key string) (interface{}, error) {
+func (c *memCache) Get(key string) (any, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	if val, ok := c.buff[key]; ok {

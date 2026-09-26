@@ -6,7 +6,7 @@ import (
 )
 
 // ConvertGeneric - converts interface inside expected struct using json serialization
-func ConvertTo[T any](v interface{}) (T, error) {
+func ConvertTo[T any](v any) (T, error) {
 	var result T
 
 	b, err := json.Marshal(v)

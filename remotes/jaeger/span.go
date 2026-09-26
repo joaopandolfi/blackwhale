@@ -18,7 +18,7 @@ func StartSpanFromRequest(tracer opentracing.Tracer, r *http.Request, name strin
 }
 
 // SpanTrace creates a tracing and returns the new context and finisher
-func SpanTrace(ctx context.Context, operationName string, tags map[string]interface{}) (context.Context, opentracing.Span) {
+func SpanTrace(ctx context.Context, operationName string, tags map[string]any) (context.Context, opentracing.Span) {
 	// Get span parent
 	var parent opentracing.SpanContext
 	currentSpan := opentracing.SpanFromContext(ctx)

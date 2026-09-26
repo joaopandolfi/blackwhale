@@ -39,7 +39,7 @@ func initializeRedis(server, password string, db int) Cache {
 	return rcache
 }
 
-func (c *redisCache) Put(key string, data interface{}, duration time.Duration) error {
+func (c *redisCache) Put(key string, data any, duration time.Duration) error {
 	err := c.client.Set(c.ctx, key, data, duration).Err()
 	if err != nil {
 		return fmt.Errorf("putting data on key (%s): %w", key, err)
@@ -47,7 +47,7 @@ func (c *redisCache) Put(key string, data interface{}, duration time.Duration) e
 	return nil
 }
 
-func (c *redisCache) Get(key string) (interface{}, error) {
+func (c *redisCache) Get(key string) (any, error) {
 	val, err := c.client.Get(c.ctx, "key").Result()
 	if err == redis.Nil {
 		return nil, nil // Key does not exists

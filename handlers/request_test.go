@@ -11,16 +11,16 @@ import (
 )
 
 func TestA(t *testing.T) {
-	p, _ := json.Marshal(map[string]interface{}{
-		"data": map[string]interface{}{
+	p, _ := json.Marshal(map[string]any{
+		"data": map[string]any{
 			"created_at": "2024-01-15T15:03:33.165626Z",
-			"delivery_info": map[string]interface{}{
+			"delivery_info": map[string]any{
 				"current_retry": 324,
 				"max_retries":   3,
 			},
-			"event": map[string]interface{}{
-				"data": map[string]interface{}{
-					"new": map[string]interface{}{
+			"event": map[string]any{
+				"data": map[string]any{
+					"new": map[string]any{
 						"created_at":       "2024-01-15T15:03:33.165686+00:00",
 						"description":      "Justificativa muito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muitomuito muito Grande",
 						"entity":           "agreement",
@@ -34,11 +34,11 @@ func TestA(t *testing.T) {
 						"updated_at":       "2024-01-15T15:03:33.165686+00:00",
 					},
 				},
-				"session_variables": map[string]interface{}{
+				"session_variables": map[string]any{
 					"x-hasura-role":    "system",
 					"x-hasura-user-id": "sauron",
 				},
-				"trace_context": map[string]interface{}{
+				"trace_context": map[string]any{
 					"span_id":  "53ccd0370875a7cf",
 					"trace_id": "c2d175a9f1e00dd3cfe1f966f19b8721",
 				},

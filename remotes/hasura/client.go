@@ -47,8 +47,8 @@ func NewHasuraClientTo(config *HasuraClientConfig) HasuraClient {
 	}
 }
 
-func (h *hasura) tags(method, query string) map[string]interface{} {
-	return map[string]interface{}{
+func (h *hasura) tags(method, query string) map[string]any {
+	return map[string]any{
 		"method": method,
 		"query":  query,
 	}
@@ -80,7 +80,7 @@ func (h *hasura) run(cmd string, vars *Variables) (*QueryResult, error) {
 		}
 	}
 
-	var response map[string]interface{}
+	var response map[string]any
 
 	err := h.client.Run(context.Background(), req, &response)
 	if err != nil {

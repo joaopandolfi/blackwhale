@@ -3,6 +3,6 @@ package cache
 import "time"
 
 type stored struct {
-	value   interface{}
+	value   any
 	validAt time.Time
 }

@@ -26,7 +26,7 @@ type Encoder interface {
 	// See the documentation for both `encoding/json.Encoder` and
 	// `encoding/json.Marshal` for more details about the workings of the
 	// underlying encoder.
-	Encode(interface{}) error
+	Encode(any) error
 }
 
 // Decoder is an interface defining a simple JSON decoder, with an interface
@@ -38,20 +38,20 @@ type Decoder interface {
 	// See the documentation for both `encoding/json.Decoder` and
 	// `encoding/json.Unmarshal` for more details about the workings of the
 	// underlying decoder.
-	Decode(interface{}) error
+	Decode(any) error
 }
 
 // marshaler is a structure that wraps a value and a list of transformers to
 // enable JSON marshaling with output transformations.
 type marshaler struct {
-	value        interface{}
+	value        any
 	transformers []transform.Transformer
 }
 
 // unmarshaler is a structure that wraps a value and a list of transformers to
 // enable JSON unmarshaling with input transformations.
 type unmarshaler struct {
-	value        interface{}
+	value        any
 	transformers []transform.Transformer
 }
 
@@ -75,7 +75,7 @@ type decoder struct {
 //
 // See the documentation for both `encoding/json.Marshaler` and
 // `encoding/json.Marshal` for more details about JSON marshaling.
-func NewMarshaler(value interface{}, transformers ...transform.Transformer) json.Marshaler {
+func NewMarshaler(value any, transformers ...transform.Transformer) json.Marshaler {
 	return &marshaler{value, transformers}
 }
 
@@ -85,7 +85,7 @@ func NewMarshaler(value interface{}, transformers ...transform.Transformer) json
 //
 // See the documentation for both `encoding/json.Unmarshaler` and
 // `encoding/json.Unmarshal` for more details about JSON unmarshaling.
-func NewUnmarshaler(value interface{}, transformers ...transform.Transformer) json.Unmarshaler {
+func NewUnmarshaler(value any, transformers ...transform.Transformer) json.Unmarshaler {
 	return &unmarshaler{value, transformers}
 }
 
@@ -125,13 +125,13 @@ func (um *unmarshaler) UnmarshalJSON(data []byte) error {
 	return json.Unmarshal(data, um.value)
 }
 
-func (e *encoder) Encode(value interface{}) error {
+func (e *encoder) Encode(value any) error {
 	return e.inner.Encode(
 		NewMarshaler(value, e.transformers...),
 	)
 }
 
-func (e *decoder) Decode(value interface{}) error {
+func (e *decoder) Decode(value any) error {
 	return e.inner.Decode(
 		NewUnmarshaler(value, e.transformers...),
 	)

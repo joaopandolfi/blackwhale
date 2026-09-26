@@ -25,13 +25,13 @@ func GetSession() *Session {
 }
 
 // GenericInsert - insert new item on database
-func GenericInsert(collection string, data interface{}) error {
+func GenericInsert(collection string, data any) error {
 	session := GetSession()
 	return session.GetCollection(collection).Insert(&data)
 }
 
 // Run specific command
-func Run(cmd interface{}) {
+func Run(cmd any) {
 	session := GetSession()
 	session.Run(cmd)
 }

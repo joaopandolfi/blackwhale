@@ -18,7 +18,7 @@ func TestCreateSpan(t *testing.T) {
 	opentracing.SetGlobalTracer(tracer)
 
 	handler = func(w http.ResponseWriter, r *http.Request) {
-		_, span := jaeger.SpanTrace(r.Context(), "test", map[string]interface{}{})
+		_, span := jaeger.SpanTrace(r.Context(), "test", map[string]any{})
 		defer span.Finish()
 
 		w.Write([]byte(fmt.Sprintf("%s -> %s", "test", "X")))

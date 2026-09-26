@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func JsonString(m interface{}) (string, error) {
+func JsonString(m any) (string, error) {
 	if m == nil {
 		return "", fmt.Errorf("m can not be null")
 	}

@@ -17,7 +17,7 @@ import (
 	"github.com/joaopandolfi/blackwhale/v2/utils"
 )
 
-type RemoteSqlDriver interface{}
+type RemoteSqlDriver any
 
 type SqlDriver struct {
 	DriverName string
@@ -89,7 +89,7 @@ func (cc SqlDriver) ForceRequest() (err error) {
 }
 
 // Execute method is used for execute a SQL
-func (cc SqlDriver) Execute(theCase string, output interface{}, sqlStatement string, sqlParams ...interface{}) (err error) {
+func (cc SqlDriver) Execute(theCase string, output any, sqlStatement string, sqlParams ...any) (err error) {
 	cc.getDB()
 	data, err := gosqljson.QueryToMaps(cc.Database, toCase(theCase), sqlStatement, sqlParams...)
 	if err != nil {
@@ -107,19 +107,19 @@ func (cc SqlDriver) Execute(theCase string, output interface{}, sqlStatement str
 	return json.Unmarshal(b, &output)
 }
 
-func (cc SqlDriver) Run(output interface{}, sqlStatement string, sqlParams ...interface{}) (err error) {
+func (cc SqlDriver) Run(output any, sqlStatement string, sqlParams ...any) (err error) {
 	cc.getDB()
 	output, err = cc.Database.Exec(sqlStatement, sqlParams...)
 	return
 }
 
-func (cc SqlDriver) QueryRow(sqlStatement string, sqlParams ...interface{}) (row *sql.Row) {
+func (cc SqlDriver) QueryRow(sqlStatement string, sqlParams ...any) (row *sql.Row) {
 	cc.getDB()
 	row = cc.Database.QueryRow(sqlStatement, sqlParams...)
 	return
 }
 
-func (cc SqlDriver) ReadDBMS(output interface{}) (result string, err error) {
+func (cc SqlDriver) ReadDBMS(output any) (result string, err error) {
 	var a int
 	cc.getDB()
 	_, err = cc.Database.Exec(`BEGIN DBMS_OUTPUT.GET_LINE(:lines, :status); END;`,
@@ -128,7 +128,7 @@ func (cc SqlDriver) ReadDBMS(output interface{}) (result string, err error) {
 	return
 }
 
-func (cc SqlDriver) QueryContext(output interface{}, sqlStatement string, sqlParams ...interface{}) (err error) {
+func (cc SqlDriver) QueryContext(output any, sqlStatement string, sqlParams ...any) (err error) {
 	cc.getDB()
 	ctx, cancel := context.WithTimeout(context.Background(), 55*time.Second)
 	defer cancel()
@@ -136,7 +136,7 @@ func (cc SqlDriver) QueryContext(output interface{}, sqlStatement string, sqlPar
 	return err
 }
 
-func (cc SqlDriver) ExecuteAndReturnLastId(sqlStatement string, sqlParams ...interface{}) (id int64, err error) {
+func (cc SqlDriver) ExecuteAndReturnLastId(sqlStatement string, sqlParams ...any) (id int64, err error) {
 	cc.getDB()
 	res, err := cc.Database.Exec(sqlStatement, sqlParams...)
 
@@ -150,7 +150,7 @@ func (cc SqlDriver) ExecuteAndReturnLastId(sqlStatement string, sqlParams ...int
 }
 
 // ExecuteToArray method is used for execute a SQL
-func (cc SqlDriver) ExecuteToArray(theCase string, sqlStatement string, sqlParams ...interface{}) (header []string, data [][]string, err error) {
+func (cc SqlDriver) ExecuteToArray(theCase string, sqlStatement string, sqlParams ...any) (header []string, data [][]string, err error) {
 	cc.getDB()
 	var rows [][]any
 	header, rows, err = gosqljson.QueryToArrays(cc.Database, toCase(theCase), sqlStatement, sqlParams...)
@@ -172,7 +172,7 @@ func (cc SqlDriver) ExecuteToArray(theCase string, sqlStatement string, sqlParam
 	return
 }
 
-func (cc SqlDriver) QueryToMap(theCase string, sqlStatement string, sqlParams ...interface{}) (data []map[string]string, err error) {
+func (cc SqlDriver) QueryToMap(theCase string, sqlStatement string, sqlParams ...any) (data []map[string]string, err error) {
 	cc.getDB()
 	var rows []map[string]any
 	rows, err = gosqljson.QueryToMaps(cc.Database, toCase(theCase), sqlStatement, sqlParams...)
@@ -215,7 +215,7 @@ func cellToString(v any) string {
 }
 
 // QueryToJSON - return ditectly on byte array
-func (cc SqlDriver) QueryToJSON(sqlStatement string, sqlParams ...interface{}) ([]byte, error) {
+func (cc SqlDriver) QueryToJSON(sqlStatement string, sqlParams ...any) ([]byte, error) {
 	cc.getDB()
 	rows, err := cc.Database.Query(sqlStatement, sqlParams...)
 	if err != nil {
@@ -228,11 +228,11 @@ func (cc SqlDriver) QueryToJSON(sqlStatement string, sqlParams ...interface{}) (
 		return nil, err
 	}
 
-	tableData := make([]map[string]interface{}, 0)
+	tableData := make([]map[string]any, 0)
 
 	count := len(columns)
-	values := make([]interface{}, count)
-	scanArgs := make([]interface{}, count)
+	values := make([]any, count)
+	scanArgs := make([]any, count)
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
@@ -243,7 +243,7 @@ func (cc SqlDriver) QueryToJSON(sqlStatement string, sqlParams ...interface{}) (
 			return nil, err
 		}
 
-		entry := make(map[string]interface{})
+		entry := make(map[string]any)
 		for i, col := range columns {
 			v := values[i]
 

@@ -6,9 +6,9 @@ import "time"
 func RunLimited(
 	id string,
 	interval time.Duration,
-	input chan interface{},
+	input chan any,
 	limit int,
-	callback func(payload interface{}),
+	callback func(payload any),
 	logMsg_optional ...string,
 ) {
 	// skip execution if debounce is already running for given id
@@ -20,7 +20,7 @@ func RunLimited(
 
 	silent := len(logMsg_optional) == 0
 
-	var payload interface{}
+	var payload any
 	timer := time.NewTimer(interval)
 	tick := make(chan bool, 2)
 	for {

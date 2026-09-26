@@ -19,17 +19,17 @@ const (
 )
 
 // Create and returns a channel bound to given id
-func Channel(id string) chan interface{} {
-	ch, _ := channels.LoadOrStore(id, make(chan interface{}, channelBuffer))
-	return ch.(chan interface{})
+func Channel(id string) chan any {
+	ch, _ := channels.LoadOrStore(id, make(chan any, channelBuffer))
+	return ch.(chan any)
 }
 
 // Runs the callback passing input as payload when interval is over. Reset interval whenever input channel receives a new payload.
 func Run(
 	id string,
 	interval time.Duration,
-	input chan interface{},
-	callback func(payload interface{}),
+	input chan any,
+	callback func(payload any),
 	logMsg_optional ...string,
 ) {
 	// skip execution if debounce is already running for given id
@@ -41,7 +41,7 @@ func Run(
 
 	silent := len(logMsg_optional) == 0
 
-	var payload interface{}
+	var payload any
 	timer := time.NewTimer(interval)
 	for {
 		select {

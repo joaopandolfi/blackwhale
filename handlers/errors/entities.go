@@ -4,7 +4,7 @@ package errors
 type TypedError struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message,omitempty"`
-	Stack   interface{} `json:"stack,omitempty"`
+	Stack   any `json:"stack,omitempty"`
 	Success bool        `json:"success"`
 }
 

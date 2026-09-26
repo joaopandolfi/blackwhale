@@ -23,16 +23,16 @@ const (
 )
 
 type QueryResult struct {
-	Data map[string]interface{}
+	Data map[string]any
 }
 
 // Gets a field from QueryResult
-func (qr *QueryResult) Get(field string) interface{} {
+func (qr *QueryResult) Get(field string) any {
 	return qr.Data[field]
 }
 
 // Cast a field of QueryResult to given model
-func (qr *QueryResult) GetTo(field string, model interface{}) error {
+func (qr *QueryResult) GetTo(field string, model any) error {
 	data := qr.Get(field)
 	bytes, err := json.Marshal(data)
 	if err != nil {
@@ -45,10 +45,10 @@ func (qr *QueryResult) GetTo(field string, model interface{}) error {
 	return nil
 }
 
-type Variables map[string]interface{}
+type Variables map[string]any
 
 // Return a Variables object from given `data`. `data` must be a pointer.
-func VariablesFrom(data interface{}) (*Variables, error) {
+func VariablesFrom(data any) (*Variables, error) {
 	var vars Variables
 	_json, err := snake_case.JsonMarshal(data)
 	if err != nil {
@@ -62,18 +62,18 @@ func VariablesFrom(data interface{}) (*Variables, error) {
 	return &vars, nil
 }
 
-type Where map[string]interface{}
+type Where map[string]any
 
-func (m *Where) AddEquals(key string, value interface{}) *Where {
-	(*m)[key] = map[string]interface{}{
+func (m *Where) AddEquals(key string, value any) *Where {
+	(*m)[key] = map[string]any{
 		Eq: value,
 	}
 
 	return m
 }
 
-func (m *Where) AddExp(key, exp string, value interface{}) *Where {
-	(*m)[key] = map[string]interface{}{
+func (m *Where) AddExp(key, exp string, value any) *Where {
+	(*m)[key] = map[string]any{
 		exp: value,
 	}
 
@@ -81,7 +81,7 @@ func (m *Where) AddExp(key, exp string, value interface{}) *Where {
 }
 
 func (m *Where) AddIsNull(key string) *Where {
-	(*m)[key] = map[string]interface{}{
+	(*m)[key] = map[string]any{
 		IsNull: true,
 	}
 	return m

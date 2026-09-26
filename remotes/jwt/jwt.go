@@ -21,7 +21,7 @@ func NewJwtToken(t Token, expMinutes int, secret string) (string, error) {
 }
 
 // NewJwtGeneric - Create an jwt using custom data
-func NewJwtGeneric(data map[string]interface{}, expMinutes int, secret string) (string, error) {
+func NewJwtGeneric(data map[string]any, expMinutes int, secret string) (string, error) {
 	atClaims := jwt.MapClaims{}
 	for k, v := range data {
 		atClaims[k] = v
@@ -48,8 +48,8 @@ func CheckJwtToken(tokenString, secret string) (Token, error) {
 		return Token{Authorized: false}, err
 	}
 
-	broker := map[string]interface{}{}
-	if b, ok := token["broker"].(map[string]interface{}); ok {
+	broker := map[string]any{}
+	if b, ok := token["broker"].(map[string]any); ok {
 		broker = b
 	}
 
@@ -62,8 +62,8 @@ func CheckJwtToken(tokenString, secret string) (Token, error) {
 	}, nil
 }
 
-func CheckJwtGenericToken(tokenString, secret string) (map[string]interface{}, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+func CheckJwtGenericToken(tokenString, secret string) (map[string]any, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		if token.Method.Alg() != jwt.SigningMethodHS256.Alg() {
 			return nil, fmt.Errorf("invalid signing method hash: %v", token.Signature)
 		}

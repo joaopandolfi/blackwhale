@@ -15,8 +15,8 @@ var InitializedChan chan bool = make(chan bool, 2)
 var waitListenners []chan bool
 
 type Cache interface {
-	Put(key string, data interface{}, duration time.Duration) error
-	Get(key string) (interface{}, error)
+	Put(key string, data any, duration time.Duration) error
+	Get(key string) (any, error)
 	Delete(key string) error
 	Size() int
 	Flush() error

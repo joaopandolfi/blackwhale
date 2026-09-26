@@ -8,7 +8,7 @@ func TestJWT(t *testing.T) {
 		ID:          "id",
 		Permission:  "permission",
 		Institution: "institution",
-		Broker: map[string]interface{}{
+		Broker: map[string]any{
 			"test": "test",
 		},
 	}

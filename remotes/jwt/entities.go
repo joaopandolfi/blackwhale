@@ -6,5 +6,5 @@ type Token struct {
 	Permission  string                 `json:"permission"`
 	Institution string                 `json:"institution"`
 	Authorized  bool                   `json:"authorized"`
-	Broker      map[string]interface{} `json:"broker"`
+	Broker      map[string]any `json:"broker"`
 }

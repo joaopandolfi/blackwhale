@@ -14,7 +14,7 @@ type DbgMessage struct {
 	Datetime string      `json:"datetime"`
 	Service  string      `json:"service"`
 	Message  string      `json:"message"`
-	Context  interface{} `json:"context"`
+	Context  any `json:"context"`
 }
 
 // Payload to send Attachment on slack
@@ -28,7 +28,7 @@ type SlackAttachment struct {
 
 var count int
 
-func newBaseMessage(level string, message string, data interface{}) DbgMessage {
+func newBaseMessage(level string, message string, data any) DbgMessage {
 	return DbgMessage{
 		Level:    level,
 		Datetime: time.Now().UTC().Format(time.RFC3339),
@@ -122,35 +122,35 @@ func getSlackUrl() string {
 	return configurations.Configuration.SlackWebHook[count]
 }
 
-func Info(message string, data ...interface{}) {
+func Info(message string, data ...any) {
 	dbg := newBaseMessage("INFO", message, data)
 	dispatch(dbg)
 	go slackDispatch(dbg)
 }
 
-func Feedback(message string, data ...interface{}) {
+func Feedback(message string, data ...any) {
 	dbg := newBaseMessage("DEBUG", message, data)
 	dispatch(dbg)
 	go slackDispatch(dbg)
 }
 
-func Debug(message string, data ...interface{}) {
+func Debug(message string, data ...any) {
 	dbg := newBaseMessage("DEBUG", message, data)
 	dispatch(dbg)
 }
 
-func Error(message string, data ...interface{}) {
+func Error(message string, data ...any) {
 	dbg := newBaseMessage("ERROR", message, data)
 	dispatch(dbg)
 }
 
-func CriticalError(message string, data ...interface{}) {
+func CriticalError(message string, data ...any) {
 	dbg := newBaseMessage("ERROR", message, data)
 	dispatch(dbg)
 	go slackDispatch(dbg)
 }
 
-func Logger(data ...interface{}) error {
+func Logger(data ...any) error {
 	dbg := newBaseMessage("DEBUG", "LOGGER", data)
 	dispatch(dbg)
 	return nil

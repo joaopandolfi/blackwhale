@@ -26,39 +26,39 @@ const (
 
 // DAO generic public interface
 type SQLDAO interface {
-	New(v interface{}) error
+	New(v any) error
 
 	// Expose gorm instance
 	DB() (*gorm.DB, error)
 
-	Get(id int, v interface{}) error
-	GetNested(id int, v interface{}, nesteds []string) error
-	GetWithArguments(id int, v interface{}, query string, args ...interface{}) error
-	GetGeneric(v interface{}, nested []string, query string, args ...interface{}) error
-	GetDeletedWithArguments(id int, v interface{}, query string, args ...interface{}) error
+	Get(id int, v any) error
+	GetNested(id int, v any, nesteds []string) error
+	GetWithArguments(id int, v any, query string, args ...any) error
+	GetGeneric(v any, nested []string, query string, args ...any) error
+	GetDeletedWithArguments(id int, v any, query string, args ...any) error
 
-	Last(v interface{}, args ...interface{}) error
+	Last(v any, args ...any) error
 
-	List(v interface{}, limit int) error
-	ListConditional(v interface{}, params ListParams, query string, args ...interface{}) error
-	ListAll(v interface{}, params ListParams) error
-	ListWithArguments(v interface{}, limit int, query string, args ...interface{}) error
-	ListWithArgumentsFull(v interface{}, limit int, query string, args ...interface{}) error
+	List(v any, limit int) error
+	ListConditional(v any, params ListParams, query string, args ...any) error
+	ListAll(v any, params ListParams) error
+	ListWithArguments(v any, limit int, query string, args ...any) error
+	ListWithArgumentsFull(v any, limit int, query string, args ...any) error
 
-	Delete(v interface{}) error
-	DeleteWithArguments(v interface{}, args ...interface{}) error
+	Delete(v any) error
+	DeleteWithArguments(v any, args ...any) error
 
-	Upsert(v interface{}) error
+	Upsert(v any) error
 
-	Update(v interface{}) error
-	UpdateFull(v interface{}) error
-	UpdateWithMap(v interface{}, val map[string]interface{}) error
-	UpdateWhere(v interface{}, val map[string]interface{}, query string, args ...interface{}) error
+	Update(v any) error
+	UpdateFull(v any) error
+	UpdateWithMap(v any, val map[string]any) error
+	UpdateWhere(v any, val map[string]any, query string, args ...any) error
 
-	Raw(v interface{}, query string, args ...interface{}) error
+	Raw(v any, query string, args ...any) error
 
-	AppendOnAssociation(v interface{}, association string, data interface{}) error
-	DeleteOnAssociation(v interface{}, association string, data interface{}) error
+	AppendOnAssociation(v any, association string, data any) error
+	DeleteOnAssociation(v any, association string, data any) error
 }
 
 type ListParams struct {
@@ -75,10 +75,10 @@ type dao struct {
 
 // Generate query based on params
 // Use wisely
-func GenerateQuery(params map[string]interface{}) (string, []interface{}) {
+func GenerateQuery(params map[string]any) (string, []any) {
 	query := ""
 	likeQuery := ""
-	data := []interface{}{}
+	data := []any{}
 	and := ""
 	or := ""
 	for k, v := range params {
@@ -135,7 +135,7 @@ func (d *dao) processNested(tx *gorm.DB, nested []string) *gorm.DB {
 
 			args := splited[1:]
 
-			argsInterfaces := make([]interface{}, len(args))
+			argsInterfaces := make([]any, len(args))
 
 			for index, value := range args {
 				if value == "withDeleteds" {
@@ -153,7 +153,7 @@ func (d *dao) processNested(tx *gorm.DB, nested []string) *gorm.DB {
 	return tx
 }
 
-func (d *dao) Last(v interface{}, args ...interface{}) error {
+func (d *dao) Last(v any, args ...any) error {
 	tx := d.db.Preload(clause.Associations).Last(v, args)
 	if tx.Error != nil {
 		return fmt.Errorf("last: %w", tx.Error)
@@ -161,7 +161,7 @@ func (d *dao) Last(v interface{}, args ...interface{}) error {
 	return nil
 }
 
-func (d *dao) Get(id int, v interface{}) error {
+func (d *dao) Get(id int, v any) error {
 	tx := d.db.Preload(clause.Associations).Find(v, id)
 	if tx.Error != nil {
 		return fmt.Errorf("get: %w", tx.Error)
@@ -169,7 +169,7 @@ func (d *dao) Get(id int, v interface{}) error {
 	return nil
 }
 
-func (d *dao) GetNested(id int, v interface{}, nested []string) error {
+func (d *dao) GetNested(id int, v any, nested []string) error {
 	tx := d.processNested(d.db, nested).Preload(clause.Associations).Find(v, id)
 	if tx.Error != nil {
 		return fmt.Errorf("get nested: %w", tx.Error)
@@ -177,7 +177,7 @@ func (d *dao) GetNested(id int, v interface{}, nested []string) error {
 	return nil
 }
 
-func (d *dao) GetWithArguments(id int, v interface{}, query string, args ...interface{}) error {
+func (d *dao) GetWithArguments(id int, v any, query string, args ...any) error {
 	tx := d.db.Preload(clause.Associations).Where(query, args...).Find(v, id)
 	if tx.Error != nil {
 		return fmt.Errorf("get with args: %w", tx.Error)
@@ -186,7 +186,7 @@ func (d *dao) GetWithArguments(id int, v interface{}, query string, args ...inte
 	return nil
 }
 
-func (d *dao) GetDeletedWithArguments(id int, v interface{}, query string, args ...interface{}) error {
+func (d *dao) GetDeletedWithArguments(id int, v any, query string, args ...any) error {
 	tx := d.db.Unscoped().Preload(clause.Associations).Where(query, args...).Find(v, id)
 	if tx.Error != nil {
 		return fmt.Errorf("get deleted with args: %w", tx.Error)
@@ -195,7 +195,7 @@ func (d *dao) GetDeletedWithArguments(id int, v interface{}, query string, args 
 	return nil
 }
 
-func (d *dao) GetGeneric(v interface{}, nested []string, query string, args ...interface{}) error {
+func (d *dao) GetGeneric(v any, nested []string, query string, args ...any) error {
 	tx := d.processNested(d.db, nested).Preload(clause.Associations).Where(query, args...).Find(v)
 	if tx.Error != nil {
 		return fmt.Errorf("get generic: %w", tx.Error)
@@ -204,7 +204,7 @@ func (d *dao) GetGeneric(v interface{}, nested []string, query string, args ...i
 	return nil
 }
 
-func (d *dao) List(v interface{}, limit int) error {
+func (d *dao) List(v any, limit int) error {
 	tx := d.db.Limit(limit).Find(v)
 	if tx.Error != nil {
 		return fmt.Errorf("list: %w", tx.Error)
@@ -213,7 +213,7 @@ func (d *dao) List(v interface{}, limit int) error {
 	return nil
 }
 
-func (d *dao) ListWithArguments(v interface{}, limit int, query string, args ...interface{}) error {
+func (d *dao) ListWithArguments(v any, limit int, query string, args ...any) error {
 	tx := d.db.Where(query, args...).Limit(limit).Find(v)
 	if tx.Error != nil {
 		return fmt.Errorf(listWithArgsMessage, tx.Error)
@@ -222,7 +222,7 @@ func (d *dao) ListWithArguments(v interface{}, limit int, query string, args ...
 	return nil
 }
 
-func (d *dao) ListWithArgumentsFull(v interface{}, limit int, query string, args ...interface{}) error {
+func (d *dao) ListWithArgumentsFull(v any, limit int, query string, args ...any) error {
 	tx := d.db.Preload(clause.Associations).Where(query, args...).Limit(limit).Find(v)
 	if tx.Error != nil {
 		return fmt.Errorf(listWithArgsMessage, tx.Error)
@@ -231,7 +231,7 @@ func (d *dao) ListWithArgumentsFull(v interface{}, limit int, query string, args
 	return nil
 }
 
-func (d *dao) ListWithArgumentsNestedOrdered(v interface{}, listParams ListParams, nested []string, order string, query string, args ...interface{}) error {
+func (d *dao) ListWithArgumentsNestedOrdered(v any, listParams ListParams, nested []string, order string, query string, args ...any) error {
 	tx := d.processNested(d.db, nested)
 	tx.Where(query, args...).Order(order).Offset(listParams.Offset).Limit(listParams.Limit).Find(v)
 	if tx.Error != nil {
@@ -241,11 +241,11 @@ func (d *dao) ListWithArgumentsNestedOrdered(v interface{}, listParams ListParam
 	return nil
 }
 
-func (d *dao) ListAll(v interface{}, params ListParams) error {
+func (d *dao) ListAll(v any, params ListParams) error {
 	return d.ListConditional(v, params, "")
 }
 
-func (d *dao) ListConditional(v interface{}, params ListParams, query string, args ...interface{}) error {
+func (d *dao) ListConditional(v any, params ListParams, query string, args ...any) error {
 	tx := d.db
 
 	if params.Full {
@@ -276,7 +276,7 @@ func (d *dao) ListConditional(v interface{}, params ListParams, query string, ar
 	return nil
 }
 
-func (d *dao) ListWithArgumentsFullOrdered(v interface{}, listParams ListParams, order, query string, args ...interface{}) error {
+func (d *dao) ListWithArgumentsFullOrdered(v any, listParams ListParams, order, query string, args ...any) error {
 	tx := d.db.Preload(clause.Associations).Where(query, args...).Order(order).Offset(listParams.Offset).Limit(listParams.Offset).Find(v)
 	if tx.Error != nil {
 		return fmt.Errorf(listWithArgsMessage, tx.Error)
@@ -285,7 +285,7 @@ func (d *dao) ListWithArgumentsFullOrdered(v interface{}, listParams ListParams,
 	return nil
 }
 
-func (d *dao) New(v interface{}) error {
+func (d *dao) New(v any) error {
 	tx := d.db.Create(v)
 	if tx.Error != nil {
 		return fmt.Errorf("saving: %w", tx.Error)
@@ -294,7 +294,7 @@ func (d *dao) New(v interface{}) error {
 	return nil
 }
 
-func (d *dao) Delete(v interface{}) error {
+func (d *dao) Delete(v any) error {
 	tx := d.db.Delete(v)
 	if tx.Error != nil {
 		return fmt.Errorf("deleting: %w", tx.Error)
@@ -303,7 +303,7 @@ func (d *dao) Delete(v interface{}) error {
 	return nil
 }
 
-func (d *dao) DeleteWithArguments(v interface{}, args ...interface{}) error {
+func (d *dao) DeleteWithArguments(v any, args ...any) error {
 	tx := d.db.Delete(v, args...)
 	if tx.Error != nil {
 		return fmt.Errorf("deleting (with args): %w", tx.Error)
@@ -312,7 +312,7 @@ func (d *dao) DeleteWithArguments(v interface{}, args ...interface{}) error {
 	return nil
 }
 
-func (d *dao) Upsert(v interface{}) error {
+func (d *dao) Upsert(v any) error {
 	tx := d.db.Clauses(clause.OnConflict{UpdateAll: true}).Session(&gorm.Session{FullSaveAssociations: true}).Save(v)
 	if tx.Error != nil {
 		return fmt.Errorf("upserting: %w", tx.Error)
@@ -321,7 +321,7 @@ func (d *dao) Upsert(v interface{}) error {
 	return nil
 }
 
-func (d *dao) Update(v interface{}) error {
+func (d *dao) Update(v any) error {
 	tx := d.db.Model(v).Updates(v)
 	if tx.Error != nil {
 		return fmt.Errorf("updating: %w", tx.Error)
@@ -330,7 +330,7 @@ func (d *dao) Update(v interface{}) error {
 	return nil
 }
 
-func (d *dao) UpdateWhere(v interface{}, val map[string]interface{}, query string, args ...interface{}) error {
+func (d *dao) UpdateWhere(v any, val map[string]any, query string, args ...any) error {
 	tx := d.db.Model(v).Where(query, args...).Updates(val)
 	if tx.Error != nil {
 		return fmt.Errorf("updating where: %w", tx.Error)
@@ -339,7 +339,7 @@ func (d *dao) UpdateWhere(v interface{}, val map[string]interface{}, query strin
 	return nil
 }
 
-func (d *dao) UpdateFull(v interface{}) error {
+func (d *dao) UpdateFull(v any) error {
 	tx := d.db.Session(&gorm.Session{FullSaveAssociations: true}).Model(v).Updates(v)
 	if tx.Error != nil {
 		return fmt.Errorf("updating (full): %w", tx.Error)
@@ -348,7 +348,7 @@ func (d *dao) UpdateFull(v interface{}) error {
 	return nil
 }
 
-func (d *dao) UpdateWithMap(v interface{}, val map[string]interface{}) error {
+func (d *dao) UpdateWithMap(v any, val map[string]any) error {
 	tx := d.db.Model(v).Updates(val)
 	if tx.Error != nil {
 		return fmt.Errorf("updating (map): %w", tx.Error)
@@ -357,7 +357,7 @@ func (d *dao) UpdateWithMap(v interface{}, val map[string]interface{}) error {
 	return nil
 }
 
-func (d *dao) Raw(v interface{}, query string, args ...interface{}) error {
+func (d *dao) Raw(v any, query string, args ...any) error {
 	tx := d.db.Raw(query, args...).Scan(v)
 	if tx.Error != nil {
 		return fmt.Errorf("Raw data: %w", tx.Error)
@@ -374,10 +374,10 @@ func (d *dao) DB() (*gorm.DB, error) {
 	return d.db, nil
 }
 
-// v interface{}: the model that has the association. Example.: &User{};
+// v any: the model that has the association. Example.: &User{};
 // association string: the association name. Example.: "Languages";
-// data interface{}: the data to be associated. Example.: &Language{ Name };
-func (d *dao) AppendOnAssociation(v interface{}, association string, data interface{}) error {
+// data any: the data to be associated. Example.: &Language{ Name };
+func (d *dao) AppendOnAssociation(v any, association string, data any) error {
 	err := d.db.Model(v).Association(association).Append(data)
 	if err != nil {
 		return fmt.Errorf("association: %w", err)
@@ -386,10 +386,10 @@ func (d *dao) AppendOnAssociation(v interface{}, association string, data interf
 	return nil
 }
 
-// v interface{}: the model that has the association. Example: &User{};
+// v any: the model that has the association. Example: &User{};
 // association string: the association name. Example: "Languages";
-// data interface{}: the associated data to be deleted. Example: &Language{ ID, Name };
-func (d *dao) DeleteOnAssociation(v interface{}, association string, data interface{}) error {
+// data any: the associated data to be deleted. Example: &Language{ ID, Name };
+func (d *dao) DeleteOnAssociation(v any, association string, data any) error {
 	err := d.db.Model(v).Association(association).Delete(data)
 	if err != nil {
 		return fmt.Errorf("association: %w", err)
