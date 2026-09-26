@@ -12,6 +12,7 @@ import (
 var handler func(w http.ResponseWriter, r *http.Request)
 
 func TestCreateSpan(t *testing.T) {
+	t.Setenv("JAEGER_SERVICE_NAME", "teste")
 	tracer, closer := jaeger.Init("teste")
 	defer closer.Close()
 	opentracing.SetGlobalTracer(tracer)
