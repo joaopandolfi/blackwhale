@@ -235,11 +235,11 @@ func Load() {
 
 		Name: "Blackwale - GO",
 		MysqlUrl: fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
-			"root",         // User
-			"rootpassword", // password
-			"localhost",    // host
-			"3311",         // port
-			"blackwhale"),  // Database
+			os.Getenv("MYSQL_USER"),
+			os.Getenv("MYSQL_PASSWORD"),
+			"localhost",
+			"3311",
+			"blackwhale"),
 
 		MongoUrl:      "mongodb://127.0.0.1:27017",
 		MongoDb:       "blackwhale",
@@ -255,7 +255,7 @@ func Load() {
 			Read:  60 * time.Second,
 		},
 
-		ResetHash: "R3S3tM$g!c0",
+		ResetHash: os.Getenv("RESET_HASH"),
 
 		StaticPath:     "/static/",
 		StaticDir:      "./views/public/",
@@ -264,12 +264,12 @@ func Load() {
 
 		MaxSizeMbUpload: 10 << 20, // 10 MB
 
-		BCryptSecret: "#1$eY)&E&0",
+		BCryptSecret: os.Getenv("BCRYPT_SECRET"),
 
 		// Session
 		Session: SessionConfiguration{
 			Name:  "A2%!#23g4$0$",
-			Store: sessions.NewCookieStore([]byte("_-)(AS(&HSDH@ˆ@@#$##$*{{{$$}}}(U$$#@D)&#Y!)P(@M)(Xyeg3b321k5*443@@##@$!")),
+			Store: sessions.NewCookieStore([]byte(os.Getenv("SESSION_SECRET"))),
 			Options: &sessions.Options{
 				Path:     "/",
 				MaxAge:   3600 * 2, //86400 * 7,
