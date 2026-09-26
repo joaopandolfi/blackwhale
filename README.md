@@ -71,3 +71,23 @@ func main() {
 	}
 }
 ```
+# Testing
+
+**Unit tests** (no external services needed):
+
+    go test ./...
+
+**Integration tests** are gated behind the `integration` build tag and talk to
+real services. For the services covered by `docker-compose.integration.yml`:
+
+    docker compose -f docker-compose.integration.yml up -d --wait
+    go test -tags=integration ./remotes/mongo/v2/... ./remotes/rabbitmq/... ./remotes/beanstalkd/...
+    docker compose -f docker-compose.integration.yml down -v
+
+Integration endpoints can be overridden with environment variables:
+`MONGO_HOST`, `MONGO_PORT`, `MONGO_DATABASE`, `RABBITMQ_URL`, `BEANSTALKD_URL`,
+`GRAPHITE_HOST`, `GRAPHITE_PORT`, `HASURA_URL`, `HASURA_SYSTEM_TOKEN`.
+
+`remotes/graphite` and `remotes/hasura` tests are integration-tagged but not
+covered by the compose file — point them at your own instances (the Hasura one
+expects a `patient` table in the metadata).
