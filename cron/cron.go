@@ -140,6 +140,11 @@ func (c *cron) worker(key string, stop chan bool, tick time.Duration, ephemeral,
 	if ephemeral {
 		time.Sleep(tick)
 		ticker.Stop()
+		select {
+		case <-ticker.C:
+		default:
+		}
+		eval <- time.Now()
 	}
 
 	if hotStart {
