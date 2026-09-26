@@ -1,0 +1,20 @@
+# golangci-lint v2 configuration.
+# Bootstrap: conservative linter set so the legacy baseline does not block CI.
+# Tighten (add errcheck, gosec, etc.) as the codebase is cleaned up.
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  default: none
+  enable:
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+
+formatters:
+  default: none
+  enable:
+    - gofmt

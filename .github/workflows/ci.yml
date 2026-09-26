@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  unit:
+    name: Build & Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: go vet
+        run: go vet ./...
+      - name: go build
+        run: go build ./...
+      - name: go test (unit)
+        run: go test ./...
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          # golangci-lint v2.12 needs a recent toolchain; keep in sync with the
+          # golangci-lint version below. The unit job still tests the minimum
+          # Go version declared in go.mod.
+          go-version: "1.26"
+          cache: true
+      # Bootstrap: only lint changed lines so the legacy baseline does not
+      # block the pipeline. Tighten (drop only-new-issues) once cleaned up.
+      - uses: golangci/golangci-lint-action@v6
+        with:
+          version: v2.12
+          only-new-issues: true
+
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Start integration services
+        run: docker compose -f docker-compose.integration.yml up -d --wait
+      - name: Wait for beanstalkd port
+        run: |
+          for _ in $(seq 1 30); do
+            if (exec 3<>/dev/tcp/127.0.0.1/11300) 2>/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "beanstalkd port 11300 did not open" >&2
+          exit 1
+      - name: go test -tags=integration
+        run: go test -tags=integration -v ./remotes/mongo/v2/... ./remotes/rabbitmq/... ./remotes/beanstalkd/...
+      - name: Tear down services
+        if: always()
+        run: docker compose -f docker-compose.integration.yml down -v || true

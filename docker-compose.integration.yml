@@ -1,0 +1,37 @@
+# Integration test services for blackwhale.
+#
+# Usage:
+#   docker compose -f docker-compose.integration.yml up -d --wait
+#   go test -tags=integration ./remotes/mongo/v2/... ./remotes/rabbitmq/... ./remotes/beanstalkd/...
+#   docker compose -f docker-compose.integration.yml down -v
+#
+# The remotes/graphite and remotes/hasura tests are integration-tagged but not
+# covered here: point them at your own instances via GRAPHITE_*/HASURA_* env vars.
+
+services:
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  rabbitmq:
+    image: rabbitmq:3
+    ports:
+      - "5672:5672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 12
+      start_period: 15s
+
+  beanstalkd:
+    image: schickling/beanstalkd:latest
+    ports:
+      - "11300:11300"
