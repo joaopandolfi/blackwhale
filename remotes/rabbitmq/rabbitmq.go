@@ -6,21 +6,21 @@ import (
 	"fmt"
 
 	c "github.com/joaopandolfi/blackwhale/v2/configurations"
-	"github.com/streadway/amqp"
+	"github.com/rabbitmq/amqp091-go"
 )
 
 // Driver for RabbitMQ
 type Driver struct {
-	Conn    *amqp.Connection
-	Channel *amqp.Channel
-	Queues  map[string]*amqp.Queue
+	Conn    *amqp091.Connection
+	Channel *amqp091.Channel
+	Queues  map[string]*amqp091.Queue
 }
 
-var conn *amqp.Connection
-var chanel *amqp.Channel
+var conn *amqp091.Connection
+var chanel *amqp091.Channel
 
-func open(connectionUrl string) (*amqp.Connection, *amqp.Channel, error) {
-	c, err := amqp.Dial(connectionUrl)
+func open(connectionUrl string) (*amqp091.Connection, *amqp091.Channel, error) {
+	c, err := amqp091.Dial(connectionUrl)
 	if err != nil {
 		return nil, nil, fmt.Errorf("connecting to rabbitmq:: %w", err)
 	}
@@ -33,11 +33,11 @@ func open(connectionUrl string) (*amqp.Connection, *amqp.Channel, error) {
 	return c, ch, nil
 }
 
-func new(c *amqp.Connection, ch *amqp.Channel) *Driver {
+func new(c *amqp091.Connection, ch *amqp091.Channel) *Driver {
 	return &Driver{
 		Conn:    c,
 		Channel: ch,
-		Queues:  map[string]*amqp.Queue{},
+		Queues:  map[string]*amqp091.Queue{},
 	}
 }
 
@@ -100,7 +100,7 @@ func (d *Driver) PutDefault(tube string, body any) error {
 		tube,  // routing key
 		false, // mandatory
 		false, // immediate
-		amqp.Publishing{
+		amqp091.Publishing{
 			ContentType: "application/json",
 			Body:        b,
 		},
@@ -113,7 +113,7 @@ func (d *Driver) PutDefault(tube string, body any) error {
 	return nil
 }
 
-func (d *Driver) Consume(tube string) (<-chan amqp.Delivery, error) {
+func (d *Driver) Consume(tube string) (<-chan amqp091.Delivery, error) {
 	return d.Channel.Consume(
 		tube,  // queue
 		"",    // consumer
@@ -126,7 +126,7 @@ func (d *Driver) Consume(tube string) (<-chan amqp.Delivery, error) {
 }
 
 // ConsumeSecure force the message can call m.Ack(true)
-func (d *Driver) ConsumeSecure(tube string) (<-chan amqp.Delivery, error) {
+func (d *Driver) ConsumeSecure(tube string) (<-chan amqp091.Delivery, error) {
 	return d.Channel.Consume(
 		tube,  // queue
 		"",    // consumer
@@ -138,7 +138,7 @@ func (d *Driver) ConsumeSecure(tube string) (<-chan amqp.Delivery, error) {
 	)
 }
 
-func shutdown(c *amqp.Connection, ch *amqp.Channel) error {
+func shutdown(c *amqp091.Connection, ch *amqp091.Channel) error {
 	if c != nil {
 		err := c.Close()
 		if err != nil {
