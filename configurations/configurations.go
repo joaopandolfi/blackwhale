@@ -168,7 +168,7 @@ func LoadFromMap(fconf map[string]string) Configurations {
 			Read:  time.Duration(timeout) * time.Second,
 		},
 
-		MaxSizeMbUpload: 10 << 55, // min << max
+		MaxSizeMbUpload: 10 << 20, // 10 MB
 
 		BCryptSecret: fconf["BCRYPT_SECRET"],
 		ResetHash:    fconf["RESET_HASH"],
@@ -188,11 +188,11 @@ func LoadFromMap(fconf map[string]string) Configurations {
 			Options: secure.Options{
 				BrowserXssFilter:   true,
 				ContentTypeNosniff: false, // Da pau nos js
-				SSLHost:            "locahost:443",
+				SSLHost:            "localhost:443",
 				SSLRedirect:        false,
 			},
 			BCryptCost:    bcryptCost,
-			Debug:         fconf["SERVER_DEBUG"] == "true",
+			Debug:         false,
 			TLSCert:       fconf["TLS_CERT"],
 			TLSKey:        fconf["TLS_KEY"],
 			JWTSecret:     fconf["JWT_SECRET"],
@@ -218,7 +218,7 @@ func LoadFromMap(fconf map[string]string) Configurations {
 		// Firewall]
 		FirewallSettings: FirewallSettings{
 			LocalHost:  "localhost:8080",
-			RemoteHost: "localhosy:443",
+			RemoteHost: "localhost:443",
 		},
 	}
 }
@@ -262,7 +262,7 @@ func Load() {
 		StaticPagesDir: "./views/pages/",
 		UploadPath:     "./views/upload/",
 
-		MaxSizeMbUpload: 10 << 55, // min << max
+		MaxSizeMbUpload: 10 << 20, // 10 MB
 
 		BCryptSecret: "#1$eY)&E&0",
 
@@ -281,15 +281,15 @@ func Load() {
 			Options: secure.Options{
 				BrowserXssFilter:   true,
 				ContentTypeNosniff: false, // Da pau nos js
-				SSLHost:            "locahost:443",
+				SSLHost:            "localhost:443",
 				SSLRedirect:        false,
 			},
 			BCryptCost:    14,
-			Debug:         true,
+			Debug:         false,
 			TLSCert:       "",
 			TLSKey:        "",
 			JWTSecret:     "",
-			AESKEY:        "-weak key :( -",
+			AESKEY:        "",
 			TokenValidity: 60,
 		},
 
@@ -307,7 +307,7 @@ func Load() {
 		// Firewall]
 		FirewallSettings: FirewallSettings{
 			LocalHost:  "localhost:8080",
-			RemoteHost: "localhosy:443",
+			RemoteHost: "localhost:443",
 		},
 	}
 
