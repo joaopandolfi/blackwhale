@@ -12,8 +12,6 @@ import (
 
 	"fmt"
 	"log"
-
-	"github.com/pkg/errors"
 )
 
 var transport *http.Transport
@@ -132,7 +130,7 @@ func PostWithHeader(url string, head map[string]string, data []byte) (body []byt
 	body, statuscode, err := PostWithHeader2(url, head, data)
 
 	if statuscode == 400 {
-		err = errors.New("[PostWithHeader] - Got Message error 400")
+		err = fmt.Errorf("[PostWithHeader] - Got Message error 400")
 	}
 
 	return
@@ -152,7 +150,7 @@ func Post(url string, data []byte) (body []byte, err error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		err = errors.New(fmt.Sprintf("[Post] - Error on make POST request, URL: %s, DATA: %s , ERROR: %s", url, string(data), err.Error()))
+		err = fmt.Errorf("[Post] - Error on make POST request, URL: %s, DATA: %s , ERROR: %w", url, string(data), err)
 		return
 	}
 
@@ -166,11 +164,11 @@ func Post(url string, data []byte) (body []byte, err error) {
 	body, err = io.ReadAll(resp.Body)
 
 	if err != nil {
-		err = errors.New(fmt.Sprintf("[Post] - Error on Read Body result, URL: %s, DATA: %s , ERROR: %s", url, string(data), err.Error()))
+		err = fmt.Errorf("[Post] - Error on Read Body result, URL: %s, DATA: %s , ERROR: %w", url, string(data), err)
 	}
 
 	if resp.StatusCode == 400 {
-		err = errors.New("[Post] - Got Message error 400")
+		err = fmt.Errorf("[Post] - Got Message error 400")
 	}
 
 	return
@@ -192,7 +190,7 @@ func GetWithHeader(url string, head map[string]string) (body []byte, err error) 
 
 	resp, err := client.Do(req)
 	if err != nil {
-		err = errors.New(fmt.Sprintf("[GetWithHeader] - Error on make GET request, URL: %s , ERROR: %s", url, err.Error()))
+		err = fmt.Errorf("[GetWithHeader] - Error on make GET request, URL: %s , ERROR: %w", url, err)
 		return
 	}
 
@@ -200,11 +198,11 @@ func GetWithHeader(url string, head map[string]string) (body []byte, err error) 
 	body, err = io.ReadAll(resp.Body)
 
 	if err != nil {
-		err = errors.New(fmt.Sprintf("[GetWithHeader] - Error on Read Body result, URL: %s, ERROR: %s", url, err.Error()))
+		err = fmt.Errorf("[GetWithHeader] - Error on Read Body result, URL: %s, ERROR: %w", url, err)
 	}
 
 	if resp.StatusCode != 200 {
-		err = errors.New(fmt.Sprintf("[GetWithHeader] - Got Message error %d", resp.StatusCode))
+		err = fmt.Errorf("[GetWithHeader] - Got Message error %d", resp.StatusCode)
 	}
 
 	return
