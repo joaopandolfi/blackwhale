@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/schema"
 	"github.com/gorilla/sessions"
 	"github.com/joaopandolfi/blackwhale/v2/configurations"
@@ -156,7 +156,15 @@ func Redirect(r *http.Request, w http.ResponseWriter, url string) {
 // @example /api/{key}/send
 // @vars = {"key":data}
 func GetVars(r *http.Request) map[string]string {
-	return mux.Vars(r)
+	rctx := chi.RouteContext(r.Context())
+	if rctx == nil {
+		return nil
+	}
+	vars := make(map[string]string, len(rctx.URLParams.Keys))
+	for i, key := range rctx.URLParams.Keys {
+		vars[key] = rctx.URLParams.Values[i]
+	}
+	return vars
 }
 
 // GetHeader - Return Header value stored on passed key

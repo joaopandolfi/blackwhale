@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -47,8 +47,10 @@ var httpDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
 
 func prometheusMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		route := mux.CurrentRoute(r)
-		path, _ := route.GetPathTemplate()
+		path := ""
+		if rctx := chi.RouteContext(r.Context()); rctx != nil {
+			path = rctx.RoutePattern()
+		}
 
 		timer := prometheus.NewTimer(httpDuration.WithLabelValues(path))
 		rw := NewResponseWriter(w)
@@ -63,12 +65,11 @@ func prometheusMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func InjectMiddleware(router *mux.Router, path string) {
+func InjectMiddleware(router *chi.Mux, path string) {
 	prometheus.Register(totalRequests)
 	prometheus.Register(responseStatus)
 	prometheus.Register(httpDuration)
 
 	router.Use(prometheusMiddleware)
-	// Prometheus endpoint
-	router.Path(path).Handler(promhttp.Handler())
+	router.Handle(path, promhttp.Handler())
 }

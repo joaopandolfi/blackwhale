@@ -9,7 +9,7 @@ Go web Framework
 import (
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 	"github.com/joaopandolfi/blackwhale/v2/configurations"
 
 	"github.com/unrolled/secure"
@@ -43,15 +43,15 @@ func main() {
 	//Init
 	configInit()
 
-	// Initialize Mux Router
-	r := mux.NewRouter()
+	// Initialize chi Router
+	r := chi.NewRouter()
 
 	// Security
 	secureMiddleware := secure.New(configurations.Configuration.Security.Options)
 	r.Use(secureMiddleware.Handler)
 
 	// Add routes
-	r.HandleFunc("/", relou).Methods("GET")
+	r.Get("/", relou)
 
 	// Bind to a port and pass our router in
 	utils.Info("MI server listenning on", configurations.Configuration.Port)

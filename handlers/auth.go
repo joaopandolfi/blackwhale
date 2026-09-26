@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 	"github.com/joaopandolfi/blackwhale/v2/configurations"
 	auth "github.com/joaopandolfi/blackwhale/v2/models/permissions"
 	"github.com/joaopandolfi/blackwhale/v2/remotes/jwt"
@@ -98,12 +98,22 @@ func QuietMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 // HandlerTokenPermissions -
 // check if the request contain the permissions
-func HandleTokenPermissions(r *mux.Router, path string, f http.HandlerFunc, permissions []string, methods ...string) {
-	r.HandleFunc(path, Chain(f, InjectOperatorOnContext, PermissionMiddleware(permissions), TokenHandler)).Methods(methods...)
+func HandleTokenPermissions(r *chi.Mux, path string, f http.HandlerFunc, permissions []string, methods ...string) {
+	registerWithMethods(r, path, Chain(f, InjectOperatorOnContext, PermissionMiddleware(permissions), TokenHandler), methods...)
 }
 
 // QuietHandlerTokenPermissions -
 // Same as HandlerTokenPermissions but without log url
-func QuietHandleTokenPermissions(r *mux.Router, path string, f http.HandlerFunc, permissions []string, methods ...string) {
-	r.HandleFunc(path, Chain(f, InjectOperatorOnContext, PermissionMiddleware(permissions), TokenHandler, QuietMiddleware)).Methods(methods...)
+func QuietHandleTokenPermissions(r *chi.Mux, path string, f http.HandlerFunc, permissions []string, methods ...string) {
+	registerWithMethods(r, path, Chain(f, InjectOperatorOnContext, PermissionMiddleware(permissions), TokenHandler, QuietMiddleware), methods...)
+}
+
+func registerWithMethods(r *chi.Mux, path string, f http.HandlerFunc, methods ...string) {
+	if len(methods) == 0 {
+		r.HandleFunc(path, f)
+		return
+	}
+	for _, m := range methods {
+		r.MethodFunc(m, path, f)
+	}
 }
