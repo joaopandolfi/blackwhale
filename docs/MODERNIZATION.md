@@ -148,12 +148,12 @@ Sequenciado p/ reduzir risco: primeiro o que habilita o resto, depois segurança
 4. ✅ GitHub Actions (`.github/workflows/ci.yml`): 3 jobs — unit (vet+build+test), lint (golangci-lint v2, only-new-issues), integration (compose up + testes tagados)
 5. 🔲 **Primeiro tag semântico** (`v1.x`) — quando a Fase 0–2 fechar (consumidores só conseguem pinar com tag)
 
-### Fase 2 — Segurança (~1–2 dias, independente)
-1. 🔲 Tirar **todos** os defaults de segredo de `configurations.go` (carregar só de arquivo/Vault/env)
-2. 🔲 **LICENSE** (obrigatório — há código vendado com copyright e nenhum license no repo, risco legal)
-3. 🔲 Resolver conjson: adicionar license upstream OU virar dependência real
-4. 🔲 Remover JWT expirado do teste do hasura (ou exigir env var obrigatória)
-5. 🔲 Rotacionar o que foi exposto (se o repo já foi público/compartilhado)
+### Fase 2 — Segurança — **fechada (só resta rotação, ação externa)**
+1. ✅ Tirar defaults de segredo de `configurations.go` → env vars (`MYSQL_USER`, `MYSQL_PASSWORD`, `RESET_HASH`, `BCRYPT_SECRET`, `SESSION_SECRET`)
+2. ✅ **LICENSE** — MIT na raiz (aprovado pelo mantenedor)
+3. ✅ conjson: manter vendado + `handlers/conjson/LICENSE` c/ atribuição upstream (Rican7/conjson, MIT) — virar dependência real é breaking (3 consumidores importam direto) → candidato p/ v2
+4. ✅ JWT expirado removido do teste do hasura (`HASURA_SYSTEM_TOKEN` obrigatório)
+5. 🔲 Rotacionar o que foi exposto (ação do mantenedor, se o repo já foi compartilhado)
 
 ### Fase 3 — Deps e código (mecânico → arriscado)
 1. 🔲 **Mecânico e seguro** (PR separado): `interface{}`→`any` (164), `chan bool`→`chan struct{}` (18), `ioutil`→`io`, `pkg/errors`→stdlib, `errors.New(fmt.Sprintf)` (4 locais), 26 `fmt.Errorf` sem `%w`
@@ -221,6 +221,6 @@ Impacta todos os services consumidores — por isso o levantamento de consumidor
 5. ✅ Commitar o WIP revisado — branch `modernization` (12 commits)
 6. ✅ Escolher a rota de versionamento: **corte v2** (§6)
 7. ✅ Bump `go 1.26` + `Makefile`
-8. 🔲 **Fase 2 (segurança):** remover defaults de segredo em `Load()` (signatures intactas — non-breaking p/ v1); LICENSE (escolher tipo); resolver `conjson` (license upstream × dependência real); JWT expirado do hasura
-9. 🔲 Tag semântico `v1.x` quando a Fase 0–2 fechar + abrir branch `v2` p/ fases 3–6 (module path `/v2`)
+8. ✅ **Fase 2 (segurança):** segredos → env, LICENSE MIT, atribuição do conjson, JWT do hasura — só resta rotação de expostos (ação do mantenedor)
+9. 🔲 Tag semântico `v1.0.0` na branch `modernization` + abrir branch `v2` (module path `/v2`) p/ fases 3–6
 10. 🔲 **`llms.md` na raiz** — deliverable final da branch (guia p/ agentes de IA: visão do projeto, comandos, convenções, gotchas)
