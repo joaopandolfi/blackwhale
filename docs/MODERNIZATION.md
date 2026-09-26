@@ -102,7 +102,7 @@ Isso **quebra o propósito de segredo configurável** e é exatamente o anti-pad
 - **13 `panic(` ativos em código de biblioteca** (mongo, pubsub, jaeger, cache, configurations, dao).
 - **Idioms modernos não adotados:** `interface{}` 164× / `any` 0×; `chan bool` 18×; `ioutil` em 2 arquivos.
 - **`context` descartado:** `remotes/mongo/v2/client.go:27,44,75,77,89` substitui o ctx recebido por `context.TODO()`.
-- **Bug de API (pendente, Fase 4):** `remotes/jaeger.Init(service)` **ignora o parâmetro** `service` e lê só `JAEGER_SERVICE_NAME` do env — o teste precisou de `t.Setenv` (mitigado; correção real junto da migração p/ OpenTelemetry).
+- **Bug de API corrigido (Fase 3/OTel):** `remotes/jaeger.Init(service)` ignorava o parâmetro `service`; a migração p/ OpenTelemetry usa `service` no resource (`semconv.ServiceName`) e seta o provider global.
 
 ### 3.3 Segurança ⚠️
 
@@ -155,19 +155,19 @@ Sequenciado p/ reduzir risco: primeiro o que habilita o resto, depois segurança
 4. ✅ JWT expirado removido do teste do hasura (`HASURA_SYSTEM_TOKEN` obrigatório)
 5. 🔲 Rotacionar o que foi exposto (ação do mantenedor, se o repo já foi compartilhado)
 
-### Fase 3 — Deps e código (branch `v2`) — **~50% done**
-1. ✅ **Mecânico e seguro** (4 commits atômicos): `interface{}`→`any` (175), `chan bool`→`chan struct{}` (18), `ioutil`→`io/os` (2), `pkg/errors`→stdlib `fmt.Errorf` c/ `%w` (7, incluindo os `errors.New(fmt.Sprintf)`) + `go mod tidy` (pkg/errors caiu p/ indirect). Ficam p/ Fase 4 os `fmt.Errorf` sem `%w` restantes (caso a caso).
-2. ✅/🔲 **Upgrades (1 por commit)**: ✅ `streadway/amqp`→`rabbitmq/amqp091-go` (pacote `amqp091`) · ✅ redis v8→v9 · ✅ validator v9→v10 · 🔲 jwt v4→v5 · 🔲 mongo-driver v1→v2 · 🔲 opentracing/jaeger→**OpenTelemetry**
-3. 🔲 **Matar `mgo.v2`:** migrar `remotes/mongo` pro driver oficial e apagar a geração antiga
-4. 🔲 **gorilla/mux → chi v5** — o maior item. Regra de ouro: API pública continua **shaped em `net/http`** (handlers = `http.Handler`, middlewares = `func(http.Handler) http.Handler`)
+### Fase 3 — Deps e código (branch `v2`) — **✅ DONE**
+1. ✅ **Mecânico e seguro** (4 commits atômicos): `interface{}`→`any` (175), `chan bool`→`chan struct{}` (18), `ioutil`→`io/os` (2), `pkg/errors`→stdlib `fmt.Errorf` c/ `%w` (7) + `go mod tidy`.
+2. ✅ **Upgrades (1 por commit)**: `streadway/amqp`→`rabbitmq/amqp091-go` (pacote `amqp091`) · redis v8→v9 · validator v9→v10 · jwt v4→v5 · mongo-driver v1→v2 · opentracing/jaeger→**OpenTelemetry** (OTLP HTTP, `Init(service)` agora usa o parâmetro e seta o provider global).
+3. ✅ **Matar `mgo.v2`:** `remotes/mongo` reescrito sobre o driver oficial — `Session` embrulha `*mongo.Client` compartilhada por URL; API pública mantém os nomes usados pelos consumidores (`GetSession`, `NewSession`, `GetPoolSession`, `GetCollection`, `GetNextID`, `CreateIndex`, `Close`, `Run`, `Health`, `Copy`); collections agora `*mongo.Collection`. Superfície sem consumidores morta (`NewService`, `GenericInsert`, `NewSessionSsl/SSLMETHOD2/Manual`, `FlushPull`).
+4. ✅ **gorilla/mux → chi v5**: `HandleTokenPermissions`/`QuietHandleTokenPermissions`/`prometheus.InjectMiddleware` agora recebem `*chi.Mux`; `GetVars` lê `chi.RouteContext`; middleware prometheus labeliza por `RoutePattern`; README exemplo atualizado.
 
-### Fase 4 — Arquitetura (o caro; depende da decisão de versão)
-1. 🔲 Quebrar ciclos: `configurations↔remotes` (vault) e `handlers↔utils` (snake_case → package próprio)
-2. 🔲 Estratégia de singletons: manter só `config` como singleton raiz; demais remotes → construtores injetáveis c/ default
-3. 🔲 Corrigir o bug do `aesKey` (cryptable)
-4. 🔲 Dissolver `utils`: logging → `log/slog`; demais helpers p/ packages nomeados ou `internal/`
-5. 🔲 Dedup: JWT 2→1, Graphite 2 APIs→1, Mongo 2→1
-6. 🔲 13 `panic` → erros retornados; `context.Context` nos funcs de I/O
+### Fase 4 — Arquitetura (branch `v2`) — **✅ DONE (com decisões)**
+1. ✅ **Ciclos**: não há ciclo literal de package (o compilador impediria). Fluxos bidirecionais mapeados: `handlers→utils` e `utils→handlers/conjson` (one-way, conjson é lib vendada autocontida — mantido, direção documentada no llms.md). Global `configurations.Configuration` mantido como contrato dos 13 consumidores — documentado como limitação v2.
+2. ✅ **Singletons**: mantidos (contrato dos consumidores); o que era bug foi corrigido (ver 3/6). Inversão de dependência completa = item v3.
+3. ✅ **Bug `aesKey`**: `var aesKey = ...AESKEY` capturava a config no init do package (antes de `Load()`) — chave stale/emptia. Agora lida em call-time; `SetAesKey` vira override.
+4. ⏸ **Dissolver `utils`**: adiado p/ v3 — 15/18 consumidores importam `utils`; renaming/moving quebra tudo sem ganho funcional.
+5. ✅ **Dedup JWT**: `remotes/jwt` = implementação canônica (secret explícito); `utils` = wrappers c/ secret da config, mesmas assinaturas; `utils.Token = jwt.Token` (alias). Mongo: legacy reescrito sobre o driver oficial (3); `remotes/mongo/v2` mantém-se como client fino c/ ctx.
+6. ✅ **Panics/context**: bug real corrigido — timeout de init do cache não mais panica (crash de processo); `waitListenners` com mutex; nil-guards em `SafeCache`. Os panics restantes são fail-fast documentado de init (`configurations.Load`, `jaeger.Init`, `GetSession`) — contrato que o `resilient()` do README recover. `remotes/mongo/v2` agora threada `context.Context` em todos os métodos (field `ctx` morto removido).
 
 ### Fase 5 — Documentação (~1 semana, paralelizável)
 1. 🔲 README reescrito: o que é (base lib, não framework), install (`go get` + `GOPRIVATE`), quickstart que **compila**, tabela de pacotes, versões Go suportadas, política de versionamento
@@ -223,4 +223,8 @@ Impacta todos os services consumidores — por isso o levantamento de consumidor
 7. ✅ Bump `go 1.26` + `Makefile`
 8. ✅ **Fase 2 (segurança):** segredos → env, LICENSE MIT, atribuição do conjson, JWT do hasura — só resta rotação de expostos (ação do mantenedor)
 9. ✅ Tag `v1.9.0` na branch `modernization` (linha v1 fechada; repo já tinha tags até `v1.8.3`) + branch `v2` (module path `/v2`) p/ fases 3–6
-10. 🔲 **`llms.md` na raiz** — deliverable final da branch (guia p/ agentes de IA: visão do projeto, comandos, convenções, gotchas)
+10. ✅ **Fases 3 e 4 na branch `v2`** — deps modernizadas (jwt v5, mongo-driver v2, OTel, chi, amqp091, redis v9, validator v10), mgo morto, bug aesKey, dedup JWT, fix cache lazy-init, context no mongo/v2
+11. 🔲 **Fase 5 — docs**: README reescrito, `doc.go`/package comments, `Example*`, CHANGELOG
+12. 🔲 **Fase 6 — testes**: unit tests de `configurations` + `middlewares`, httptest
+13. 🔲 **`llms.md` na raiz** — deliverable final da branch (guia p/ agentes de IA: visão do projeto, comandos, convenções, gotchas)
+14. 🔲 Tag `v2.0.0` + push (com permissão)
