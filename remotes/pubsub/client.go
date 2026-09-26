@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	ps "cloud.google.com/go/pubsub"
-	"github.com/joaopandolfi/blackwhale/utils"
+	"github.com/joaopandolfi/blackwhale/v2/utils"
 )
 
 type DriverContract interface {

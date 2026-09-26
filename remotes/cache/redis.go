@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/joaopandolfi/blackwhale/configurations"
-	"github.com/joaopandolfi/blackwhale/utils"
+	"github.com/joaopandolfi/blackwhale/v2/configurations"
+	"github.com/joaopandolfi/blackwhale/v2/utils"
 )
 
 var rcache *redisCache

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/joaopandolfi/blackwhale/remotes/request"
+	"github.com/joaopandolfi/blackwhale/v2/remotes/request"
 )
 
 type VaultPayload struct {

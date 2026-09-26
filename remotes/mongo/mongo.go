@@ -1,7 +1,7 @@
 package mongo
 
 import (
-	"github.com/joaopandolfi/blackwhale/utils"
+	"github.com/joaopandolfi/blackwhale/v2/utils"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )

@@ -6,7 +6,7 @@ import (
 
 	"github.com/joaopandolfi/graphql"
 
-	"github.com/joaopandolfi/blackwhale/remotes/jaeger"
+	"github.com/joaopandolfi/blackwhale/v2/remotes/jaeger"
 )
 
 const defaultRole = "system"

@@ -10,13 +10,13 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/joaopandolfi/blackwhale/configurations"
+	"github.com/joaopandolfi/blackwhale/v2/configurations"
 
 	"github.com/unrolled/secure"
 
-	"github.com/joaopandolfi/blackwhale/handlers"
-	"github.com/joaopandolfi/blackwhale/remotes/mysql"
-	"github.com/joaopandolfi/blackwhale/utils"
+	"github.com/joaopandolfi/blackwhale/v2/handlers"
+	"github.com/joaopandolfi/blackwhale/v2/remotes/mysql"
+	"github.com/joaopandolfi/blackwhale/v2/utils"
 )
 
 func configInit() {

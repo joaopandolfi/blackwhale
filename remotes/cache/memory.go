@@ -6,7 +6,7 @@ import (
 
 	"fmt"
 
-	"github.com/joaopandolfi/blackwhale/utils"
+	"github.com/joaopandolfi/blackwhale/v2/utils"
 )
 
 var mcache *memCache

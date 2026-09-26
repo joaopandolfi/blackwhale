@@ -14,7 +14,7 @@ import (
 
 	//_ "gopkg.in/rana/ora.v4"
 	//_ "github.com/mattn/go-oci8"
-	"github.com/joaopandolfi/blackwhale/utils"
+	"github.com/joaopandolfi/blackwhale/v2/utils"
 )
 
 type RemoteSqlDriver interface{}

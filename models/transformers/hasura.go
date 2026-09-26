@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/joaopandolfi/blackwhale/remotes/hasura"
+	"github.com/joaopandolfi/blackwhale/v2/remotes/hasura"
 )
 
 // QueryResultTo converts an hasura query result into a given struct

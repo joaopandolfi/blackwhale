@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/flosch/pongo2"
-	"github.com/joaopandolfi/blackwhale/configurations"
+	"github.com/joaopandolfi/blackwhale/v2/configurations"
 )
 
 func Round(value float64) float64 {

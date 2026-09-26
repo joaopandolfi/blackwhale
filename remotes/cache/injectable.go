@@ -3,7 +3,7 @@ package cache
 import (
 	"time"
 
-	"github.com/joaopandolfi/blackwhale/utils"
+	"github.com/joaopandolfi/blackwhale/v2/utils"
 )
 
 type cacheInjectable interface {

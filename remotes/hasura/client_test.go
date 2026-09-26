@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/joaopandolfi/blackwhale/remotes/hasura"
+	"github.com/joaopandolfi/blackwhale/v2/remotes/hasura"
 	"github.com/tj/assert"
 )
 

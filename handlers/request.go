@@ -14,11 +14,11 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"github.com/gorilla/sessions"
-	"github.com/joaopandolfi/blackwhale/configurations"
-	"github.com/joaopandolfi/blackwhale/handlers/conjson"
-	"github.com/joaopandolfi/blackwhale/handlers/conjson/transform"
-	"github.com/joaopandolfi/blackwhale/handlers/errors"
-	"github.com/joaopandolfi/blackwhale/utils"
+	"github.com/joaopandolfi/blackwhale/v2/configurations"
+	"github.com/joaopandolfi/blackwhale/v2/handlers/conjson"
+	"github.com/joaopandolfi/blackwhale/v2/handlers/conjson/transform"
+	"github.com/joaopandolfi/blackwhale/v2/handlers/errors"
+	"github.com/joaopandolfi/blackwhale/v2/utils"
 )
 
 // --- Responses ---

@@ -14,7 +14,7 @@ package conjson
 import (
 	"encoding/json"
 
-	"github.com/joaopandolfi/blackwhale/handlers/conjson/transform"
+	"github.com/joaopandolfi/blackwhale/v2/handlers/conjson/transform"
 )
 
 // Encoder is an interface defining a simple JSON encoder, with an interface

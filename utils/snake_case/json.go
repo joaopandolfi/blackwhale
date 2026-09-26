@@ -3,8 +3,8 @@ package snake_case
 import (
 	"encoding/json"
 
-	"github.com/joaopandolfi/blackwhale/handlers/conjson"
-	"github.com/joaopandolfi/blackwhale/handlers/conjson/transform"
+	"github.com/joaopandolfi/blackwhale/v2/handlers/conjson"
+	"github.com/joaopandolfi/blackwhale/v2/handlers/conjson/transform"
 )
 
 // JsonMarshal - Marshal struct to snake_case

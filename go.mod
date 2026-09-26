@@ -1,4 +1,4 @@
-module github.com/joaopandolfi/blackwhale
+module github.com/joaopandolfi/blackwhale/v2
 
 go 1.26
 

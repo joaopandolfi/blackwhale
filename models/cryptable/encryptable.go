@@ -3,8 +3,8 @@ package encryptable
 import (
 	"fmt"
 
-	"github.com/joaopandolfi/blackwhale/configurations"
-	"github.com/joaopandolfi/blackwhale/utils/aes"
+	"github.com/joaopandolfi/blackwhale/v2/configurations"
+	"github.com/joaopandolfi/blackwhale/v2/utils/aes"
 )
 
 var aesKey = configurations.Configuration.Security.AESKEY

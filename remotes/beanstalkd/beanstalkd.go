@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	c "github.com/joaopandolfi/blackwhale/configurations"
+	c "github.com/joaopandolfi/blackwhale/v2/configurations"
 	"github.com/kr/beanstalk"
 )
 

@@ -6,7 +6,7 @@ import (
 
 	"time"
 
-	"github.com/joaopandolfi/blackwhale/utils"
+	"github.com/joaopandolfi/blackwhale/v2/utils"
 )
 
 const EphemeralJobDefaultDelay = time.Millisecond * 10

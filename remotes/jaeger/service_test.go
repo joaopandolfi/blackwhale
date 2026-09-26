@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/joaopandolfi/blackwhale/remotes/jaeger"
+	"github.com/joaopandolfi/blackwhale/v2/remotes/jaeger"
 	"github.com/opentracing/opentracing-go"
 )
 

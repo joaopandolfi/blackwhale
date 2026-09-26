@@ -3,7 +3,7 @@ package cache
 import (
 	"time"
 
-	"github.com/joaopandolfi/blackwhale/configurations"
+	"github.com/joaopandolfi/blackwhale/v2/configurations"
 )
 
 const MAX_BUFF_SIZE = 150

@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	c "github.com/joaopandolfi/blackwhale/configurations"
+	c "github.com/joaopandolfi/blackwhale/v2/configurations"
 )
 
 func testURL() string {

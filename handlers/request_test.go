@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/joaopandolfi/blackwhale/remotes/request"
+	"github.com/joaopandolfi/blackwhale/v2/remotes/request"
 	"github.com/tj/assert"
 )
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/joaopandolfi/blackwhale/utils"
+	"github.com/joaopandolfi/blackwhale/v2/utils"
 )
 
 type HasuraClientMockResponse struct {

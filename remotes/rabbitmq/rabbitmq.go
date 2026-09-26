@@ -5,7 +5,7 @@ import (
 
 	"fmt"
 
-	c "github.com/joaopandolfi/blackwhale/configurations"
+	c "github.com/joaopandolfi/blackwhale/v2/configurations"
 	"github.com/streadway/amqp"
 )
 

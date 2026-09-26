@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/joaopandolfi/blackwhale/utils/snake_case"
+	"github.com/joaopandolfi/blackwhale/v2/utils/snake_case"
 )
 
 const (

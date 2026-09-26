@@ -6,7 +6,7 @@ import (
 
 	jwt "github.com/golang-jwt/jwt/v4"
 
-	"github.com/joaopandolfi/blackwhale/configurations"
+	"github.com/joaopandolfi/blackwhale/v2/configurations"
 	"golang.org/x/crypto/bcrypt"
 )
 

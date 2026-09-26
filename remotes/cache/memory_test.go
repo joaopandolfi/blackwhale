@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/joaopandolfi/blackwhale/configurations"
+	"github.com/joaopandolfi/blackwhale/v2/configurations"
 	"github.com/stretchr/testify/assert"
 )
 

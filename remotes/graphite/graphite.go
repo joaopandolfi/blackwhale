@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	conf "github.com/joaopandolfi/blackwhale/configurations"
+	conf "github.com/joaopandolfi/blackwhale/v2/configurations"
 )
 
 var _host string

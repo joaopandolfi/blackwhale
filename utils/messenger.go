@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/joaopandolfi/blackwhale/configurations"
-	"github.com/joaopandolfi/blackwhale/remotes/request"
+	"github.com/joaopandolfi/blackwhale/v2/configurations"
+	"github.com/joaopandolfi/blackwhale/v2/remotes/request"
 )
 
 type DbgMessage struct {

@@ -3,7 +3,7 @@ package request_test
 import (
 	"testing"
 
-	"github.com/joaopandolfi/blackwhale/remotes/request"
+	"github.com/joaopandolfi/blackwhale/v2/remotes/request"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -1,8 +1,8 @@
 package postgresql
 
 import (
-	"github.com/joaopandolfi/blackwhale/configurations"
-	"github.com/joaopandolfi/blackwhale/remotes/sqldriver"
+	"github.com/joaopandolfi/blackwhale/v2/configurations"
+	"github.com/joaopandolfi/blackwhale/v2/remotes/sqldriver"
 )
 
 type pDriver struct {

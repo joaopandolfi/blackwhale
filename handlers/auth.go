@@ -6,10 +6,10 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/joaopandolfi/blackwhale/configurations"
-	auth "github.com/joaopandolfi/blackwhale/models/permissions"
-	"github.com/joaopandolfi/blackwhale/remotes/jwt"
-	"github.com/joaopandolfi/blackwhale/utils"
+	"github.com/joaopandolfi/blackwhale/v2/configurations"
+	auth "github.com/joaopandolfi/blackwhale/v2/models/permissions"
+	"github.com/joaopandolfi/blackwhale/v2/remotes/jwt"
+	"github.com/joaopandolfi/blackwhale/v2/utils"
 )
 
 type ContextInjection string
