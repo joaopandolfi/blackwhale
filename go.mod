@@ -6,10 +6,10 @@ require (
 	cloud.google.com/go/pubsub v1.50.1
 	github.com/elgs/gosqljson v0.0.0-20230401112035-720b6a36f4c5
 	github.com/flosch/pongo2 v0.0.0-20200913210552-0d938eb266f3
+	github.com/go-chi/chi/v5 v5.3.2
 	github.com/go-playground/validator/v10 v10.30.5
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/golang-jwt/jwt/v5 v5.3.1
-	github.com/gorilla/mux v1.8.1
 	github.com/gorilla/schema v1.4.1
 	github.com/gorilla/sessions v1.4.0
 	github.com/joaopandolfi/graphql v1.1.0
@@ -43,7 +43,6 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/felixge/httpsnoop v1.1.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.15 // indirect
-	github.com/go-chi/chi/v5 v5.3.2 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
