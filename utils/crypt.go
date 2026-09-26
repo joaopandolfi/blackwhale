@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	jwt "github.com/golang-jwt/jwt/v4"
+	jwt "github.com/golang-jwt/jwt/v5"
 
 	"github.com/joaopandolfi/blackwhale/v2/configurations"
 	"golang.org/x/crypto/bcrypt"
