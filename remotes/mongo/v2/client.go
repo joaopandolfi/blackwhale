@@ -11,7 +11,6 @@ import (
 
 type Client struct {
 	conn *mongo.Client
-	ctx  context.Context
 }
 
 func MountURL(username, password, host, options string) string {
@@ -22,26 +21,19 @@ func MountURL(username, password, host, options string) string {
 }
 
 // New mongo client
-func New(url string, ctx context.Context) (*Client, error) {
-	if ctx == nil {
-		ctx = context.TODO()
-	}
-
+func New(url string) (*Client, error) {
 	client, err := mongo.Connect(options.Client().ApplyURI(url))
 	if err != nil {
 		return nil, fmt.Errorf("connecting to mongo: %w", err)
 	}
 
-	return &Client{
-		conn: client,
-		ctx:  ctx,
-	}, nil
+	return &Client{conn: client}, nil
 }
 
 // Disconnect client to server
-func (c *Client) Disconnect() error {
+func (c *Client) Disconnect(ctx context.Context) error {
 	if c.conn != nil {
-		return c.conn.Disconnect(context.TODO())
+		return c.conn.Disconnect(ctx)
 	}
 
 	return nil
@@ -64,17 +56,17 @@ type index struct {
 	Key string `json:"key"`
 }
 
-// GetNextID returns next incremental counter
-func (c *Client) GetNextCounter(database, key string) (int, error) {
+// GetNextCounter returns next incremental counter
+func (c *Client) GetNextCounter(ctx context.Context, database, key string) (int, error) {
 	var doc index
 	coll := c.Collection(database, "whale_counter")
 
 	filter := bson.M{"key": key}
 	update := bson.M{"$inc": bson.M{"n": 1}}
 	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
-	err := coll.FindOneAndUpdate(context.TODO(), filter, update, opts).Decode(&doc)
+	err := coll.FindOneAndUpdate(ctx, filter, update, opts).Decode(&doc)
 	if err != nil {
-		_, err = coll.InsertOne(context.TODO(), bson.M{"key": key, "n": 0})
+		_, err = coll.InsertOne(ctx, bson.M{"key": key, "n": 0})
 		if err != nil {
 			return 0, fmt.Errorf("initializing counter (%s): %w", key, err)
 		}
@@ -84,9 +76,9 @@ func (c *Client) GetNextCounter(database, key string) (int, error) {
 }
 
 // ClearCounter reset counter
-func (c *Client) ClearCounter(database, key string) error {
+func (c *Client) ClearCounter(ctx context.Context, database, key string) error {
 	coll := c.Collection(database, "whale_counter")
-	_, err := coll.DeleteOne(context.TODO(), bson.M{"key": key})
+	_, err := coll.DeleteOne(ctx, bson.M{"key": key})
 	if err != nil {
 		return fmt.Errorf("deleting counter: %w", err)
 	}

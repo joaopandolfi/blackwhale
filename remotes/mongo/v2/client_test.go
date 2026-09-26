@@ -24,7 +24,7 @@ func envOr(key, fallback string) string {
 
 func Test_Connection(t *testing.T) {
 	url := MountURL("", "", _host, _port)
-	client, err := New(url, nil)
+	client, err := New(url)
 	if err != nil {
 		t.Errorf("connecting: %v", err)
 		return
@@ -34,7 +34,7 @@ func Test_Connection(t *testing.T) {
 		t.Errorf("ping: %v", err)
 		return
 	}
-	err = client.Disconnect()
+	err = client.Disconnect(context.TODO())
 	if err != nil {
 		t.Errorf("disconnect: %v", err)
 		return
@@ -43,7 +43,7 @@ func Test_Connection(t *testing.T) {
 
 func Test_Manipulating(t *testing.T) {
 	url := MountURL("", "", _host, _port)
-	client, err := New(url, nil)
+	client, err := New(url)
 	if err != nil {
 		t.Errorf("connecting: %v", err)
 		return
@@ -87,7 +87,7 @@ func Test_Manipulating(t *testing.T) {
 		return
 	}
 
-	err = client.Disconnect()
+	err = client.Disconnect(context.TODO())
 	if err != nil {
 		t.Errorf("disconnect: %v", err)
 		return
@@ -96,7 +96,7 @@ func Test_Manipulating(t *testing.T) {
 
 func Test_Counter(t *testing.T) {
 	url := MountURL("", "", _host, _port)
-	client, err := New(url, nil)
+	client, err := New(url)
 	if err != nil {
 		t.Errorf("connecting: %v", err)
 		return
@@ -104,7 +104,7 @@ func Test_Counter(t *testing.T) {
 
 	_counter_key := "test"
 
-	count, err := client.GetNextCounter(_database, _counter_key)
+	count, err := client.GetNextCounter(context.TODO(), _database, _counter_key)
 	if err != nil {
 		t.Errorf("first count err: %v", err)
 		return
@@ -115,7 +115,7 @@ func Test_Counter(t *testing.T) {
 		return
 	}
 
-	count, err = client.GetNextCounter(_database, _counter_key)
+	count, err = client.GetNextCounter(context.TODO(), _database, _counter_key)
 	if err != nil {
 		t.Errorf("second count err: %v", err)
 		return
@@ -126,7 +126,7 @@ func Test_Counter(t *testing.T) {
 		return
 	}
 
-	err = client.ClearCounter(_database, _counter_key)
+	err = client.ClearCounter(context.TODO(), _database, _counter_key)
 	if err != nil {
 		t.Errorf("cleaning counter: %v", err)
 		return
