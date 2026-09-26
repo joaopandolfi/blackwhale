@@ -5,6 +5,7 @@ package hasura_test
 import (
 	"context"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/joaopandolfi/blackwhale/remotes/hasura"
@@ -17,9 +18,12 @@ func TestQuery(t *testing.T) {
 		url = v
 	}
 
-	systemToken := "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRob3JpemVkIjp0cnVlLCJicm9rZXIiOnsieC1oYXN1cmEtYWxsb3dlZC1yb2xlcyI6WyJzeXN0ZW0iLCJ1c2VyIl0sIngtaGFzdXJhLWRlZmF1bHQtcm9sZSI6InVzZXIiLCJ4LWhhc3VyYS11c2VyLWlkIjoiZjc2YzIwY2UtYjZlZS00MjY2LTk3ODgtNWM5MTUxZWFiYjZhIn0sImV4cCI6MTY2Mzc5MTQ1MSwiaWQiOiJmNzZjMjBjZS1iNmVlLTQyNjYtOTc4OC01YzkxNTFlYWJiNmEiLCJpbnN0aXR1dGlvbiI6InNhdXJvbiIsInBlcm1pc3Npb24iOiJzeXN0ZW07dXNlciJ9.aAWGeyvyHEm526_3pxBf3zq6niCUmPqL9IzmQZKuY4c"
-	if v := os.Getenv("HASURA_SYSTEM_TOKEN"); v != "" {
-		systemToken = v
+	systemToken := os.Getenv("HASURA_SYSTEM_TOKEN")
+	if systemToken == "" {
+		t.Skip("HASURA_SYSTEM_TOKEN not set")
+	}
+	if !strings.HasPrefix(systemToken, "Bearer ") {
+		systemToken = "Bearer " + systemToken
 	}
 
 	h := hasura.NewHasuraClientTo(&hasura.HasuraClientConfig{
