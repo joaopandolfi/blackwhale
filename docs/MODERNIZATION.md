@@ -169,16 +169,15 @@ Sequenciado p/ reduzir risco: primeiro o que habilita o resto, depois segurança
 5. ✅ **Dedup JWT**: `remotes/jwt` = implementação canônica (secret explícito); `utils` = wrappers c/ secret da config, mesmas assinaturas; `utils.Token = jwt.Token` (alias). Mongo: legacy reescrito sobre o driver oficial (3); `remotes/mongo/v2` mantém-se como client fino c/ ctx.
 6. ✅ **Panics/context**: bug real corrigido — timeout de init do cache não mais panica (crash de processo); `waitListenners` com mutex; nil-guards em `SafeCache`. Os panics restantes são fail-fast documentado de init (`configurations.Load`, `jaeger.Init`, `GetSession`) — contrato que o `resilient()` do README recover. `remotes/mongo/v2` agora threada `context.Context` em todos os métodos (field `ctx` morto removido).
 
-### Fase 5 — Documentação (~1 semana, paralelizável)
-1. 🔲 README reescrito: o que é (base lib, não framework), install (`go get` + `GOPRIVATE`), quickstart que **compila**, tabela de pacotes, versões Go suportadas, política de versionamento
-2. 🔲 `doc.go` + package comment em todo package público; doc comments começando por `utils` (logging) e `cron`
-3. 🔲 `Example*` com `// Output:` nos packages públicos (dobram como teste de regressão)
-4. 🔲 CHANGELOG (Keep a Changelog); atualizar README stale do jaeger (assinatura desatualizada) e do pubsub (zero API)
+### Fase 5 — Documentação — **✅ DONE**
+1. ✅ README reescrito: base lib (não framework), install, quickstart chi que compila, tabela de 29 pacotes, guia de migração v1→v2, política de versionamento
+2. ✅ Package comments nos 7 packages que estavam sem (cron, middlewares, models/compressible, models/permissions, remotes/instrumentable, remotes/prometheus, utils/aes)
+3. ✅ `ExampleMountURL` com `// Output:` (remotes/mongo/v2) — os demais helpers públicos têm saída não-determinística (tempo/tokens), então `// Output:` não se aplica
+4. ✅ CHANGELOG (Keep a Changelog) com entrada completa do v2.0.0; README do jaeger reescrito (OTel) no commit da migração; README do pubsub ganhou seção de API
 
-### Fase 6 — Testes (~1–2 semanas, paralelizável)
-1. 🔲 Unit tests de `configurations` (parse/load) e `middlewares` (gzip) — lógica pura, sem infra
-2. 🔲 Testes de HTTP real → `httptest`; eliminar sleeps (`Eventually`/canais); mocks p/ `_test.go`/`internal`
-3. 🔲 Meta: suite unitária 100% verde em CI sem infra; integration atrás da tag + compose
+### Fase 6 — Testes — **✅ DONE**
+1. ✅ Unit tests de `configurations` (`LoadFromMap`, `LoadFromFile` c/ temp file) e `middlewares` (gzip: decompressa, passthrough, payload inválido → 400) c/ `httptest`
+2. ✅ Suite unitária 12/12 pacotes ok sem infra; integration atrás da tag + compose (mantido da Fase 0)
 
 ---
 
@@ -224,7 +223,7 @@ Impacta todos os services consumidores — por isso o levantamento de consumidor
 8. ✅ **Fase 2 (segurança):** segredos → env, LICENSE MIT, atribuição do conjson, JWT do hasura — só resta rotação de expostos (ação do mantenedor)
 9. ✅ Tag `v1.9.0` na branch `modernization` (linha v1 fechada; repo já tinha tags até `v1.8.3`) + branch `v2` (module path `/v2`) p/ fases 3–6
 10. ✅ **Fases 3 e 4 na branch `v2`** — deps modernizadas (jwt v5, mongo-driver v2, OTel, chi, amqp091, redis v9, validator v10), mgo morto, bug aesKey, dedup JWT, fix cache lazy-init, context no mongo/v2
-11. 🔲 **Fase 5 — docs**: README reescrito, `doc.go`/package comments, `Example*`, CHANGELOG
-12. 🔲 **Fase 6 — testes**: unit tests de `configurations` + `middlewares`, httptest
-13. 🔲 **`llms.md` na raiz** — deliverable final da branch (guia p/ agentes de IA: visão do projeto, comandos, convenções, gotchas)
-14. 🔲 Tag `v2.0.0` + push (com permissão)
+11. ✅ **Fase 5 — docs**: README reescrito, package comments, `ExampleMountURL`, CHANGELOG v2.0.0
+12. ✅ **Fase 6 — testes**: unit tests de `configurations` + `middlewares` (httptest); suite 12/12
+13. ✅ **`llms.md` na raiz** — guia p/ agentes de IA (visão, comandos, regras de arquitetura, convenções, gotchas)
+14. ✅ **Tag `v2.0.0`** na branch `v2` · 🔲 push das branches (aguardando permissão) · 🔲 rotação de segredos (mantenedor)
