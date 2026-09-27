@@ -67,7 +67,7 @@ func Test_Manipulating(t *testing.T) {
 		return
 	}
 
-	var result map[string]string
+	var result map[string]any
 
 	err = col.FindOne(context.TODO(), bson.M{"title": "updated"}).Decode(&result)
 	if err != nil {

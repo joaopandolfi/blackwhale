@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-09-26
+
+### Fixed
+
+- CI: `golangci-lint-action` v6 does not support golangci-lint v2 (the lint job
+  failed before running any linter) — bumped to action v7, pinned `v2.12.2`.
+- `sqldriver.Run`/`QueryContext`: `output` param was overwritten before first use
+  (staticcheck SA4009). Param is kept for v1 API compatibility and documented;
+  `QueryContext` now closes the result rows (previously leaked).
+- Integration tests: rabbitmq test declares the queue before publish/consume
+  (publishing to the default exchange without a queue silently drops the message,
+  and consuming an undeclared queue fails with AMQP 404); mongo/v2 test decodes
+  into `map[string]any` (an ObjectID `_id` cannot decode into `map[string]string`).
+
 ## [2.0.0] - 2026-09-26
 
 New major line (module path `github.com/joaopandolfi/blackwhale/v2`). Breaking release.

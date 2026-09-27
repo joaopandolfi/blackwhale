@@ -20,13 +20,14 @@ func Test_putdata(t *testing.T) {
 	c.Configuration = c.Configurations{RabbitMQURL: testURL()}
 	d, err := New()
 	if err != nil {
-		t.Errorf("creating rabbitMQ driver: %v", err)
-		return
+		t.Fatalf("creating rabbitMQ driver: %v", err)
+	}
+	if err := d.OpenQueue("teste"); err != nil {
+		t.Fatalf("declaring queue teste: %v", err)
 	}
 	err = d.PutDefault("teste", map[string]string{"msg": "bananinha amassada"})
 	if err != nil {
-		t.Errorf("puting data on tube teste: %v", err)
-		return
+		t.Fatalf("puting data on tube teste: %v", err)
 	}
 }
 
@@ -38,10 +39,12 @@ func Test_readdata(t *testing.T) {
 		return
 	}
 
+	if err := d.OpenQueue("teste"); err != nil {
+		t.Fatalf("declaring queue teste: %v", err)
+	}
 	c, err := d.Consume("teste")
 	if err != nil {
-		t.Errorf("consuming message from tube teste: %v", err)
-		return
+		t.Fatalf("consuming message from tube teste: %v", err)
 	}
 	body := <-c
 	t.Logf("%s, %s", body.AppId, string(body.Body))
