@@ -103,9 +103,11 @@ func (cc SqlDriver) Execute(theCase string, output any, sqlStatement string, sql
 	return json.Unmarshal(b, &output)
 }
 
+// Run executes sqlStatement. The output parameter is kept for API
+// compatibility with v1 and is not used by the caller.
 func (cc SqlDriver) Run(output any, sqlStatement string, sqlParams ...any) (err error) {
 	cc.getDB()
-	output, err = cc.Database.Exec(sqlStatement, sqlParams...)
+	_, err = cc.Database.Exec(sqlStatement, sqlParams...)
 	return
 }
 
@@ -124,12 +126,18 @@ func (cc SqlDriver) ReadDBMS(output any) (result string, err error) {
 	return
 }
 
+// QueryContext runs sqlStatement with a 55s timeout. The output parameter is
+// kept for API compatibility with v1 and is not used by the caller; result
+// rows are closed since callers cannot receive them.
 func (cc SqlDriver) QueryContext(output any, sqlStatement string, sqlParams ...any) (err error) {
 	cc.getDB()
 	ctx, cancel := context.WithTimeout(context.Background(), 55*time.Second)
 	defer cancel()
-	output, err = cc.Database.QueryContext(ctx, sqlStatement, sqlParams...)
-	return err
+	rows, err := cc.Database.QueryContext(ctx, sqlStatement, sqlParams...)
+	if err != nil {
+		return err
+	}
+	return rows.Close()
 }
 
 func (cc SqlDriver) ExecuteAndReturnLastId(sqlStatement string, sqlParams ...any) (id int64, err error) {

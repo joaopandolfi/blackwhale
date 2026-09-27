@@ -35,9 +35,9 @@ jobs:
           cache: true
       # Bootstrap: only lint changed lines so the legacy baseline does not
       # block the pipeline. Tighten (drop only-new-issues) once cleaned up.
-      - uses: golangci/golangci-lint-action@v6
+      - uses: golangci/golangci-lint-action@v7
         with:
-          version: v2.12
+          version: v2.12.2
           only-new-issues: true
 
   integration:
