@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"regexp"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
@@ -21,10 +20,6 @@ import (
 )
 
 // --- Responses ---
-
-// Regexp definitions
-var keyMatchRegex = regexp.MustCompile(`\"(\w+)\":`)
-var wordBarrierRegex = regexp.MustCompile(`([a-z_0-9])([A-Z])`)
 
 // marshaler
 var marshaler func(v any) ([]byte, error) = json.Marshal

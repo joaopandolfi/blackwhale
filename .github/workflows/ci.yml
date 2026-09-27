@@ -1,7 +1,12 @@
 name: CI
 
 on:
+  # Tag pushes run the same code already covered by the branch run; they are
+  # excluded because golangci-lint's only-new-issues cannot compute a diff
+  # base against a tag and falls back to the full legacy baseline.
   push:
+    branches:
+      - "**"
   pull_request:
 
 jobs:
